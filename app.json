@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Streak Tracker & Motivation",
+    "slug": "streak-tracker-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d1117"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.streaktracker.app",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.streaktracker.app"
+        ]
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to attach proof photos to your daily habit journal entries.",
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to attach photos to your daily habit journal entries."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0d1117"
+      },
+      "package": "com.streaktracker.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Streak Tracker to access your photos for journal attachments.",
+          "cameraPermission": "Allow Streak Tracker to take photos for your streak proof."
+        }
+      ]
+    ]
+  }
+}
