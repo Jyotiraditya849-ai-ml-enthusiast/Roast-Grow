@@ -166,8 +166,16 @@ export const StreakCelebrationModal = ({
           </Animated.View>
 
           {/* Celebration Header */}
-          <Text style={styles.badgeLabel}>TODAY'S STREAK UNLOCKED! 🔥</Text>
-          <Text style={styles.streakNumber}>DAY {streak}</Text>
+          <Text style={[styles.badgeLabel, streak >= 100 && styles.badgeLabelCenturion]}>
+            {streak === 100
+              ? '🏆 100-DAY CHALLENGE CONQUERED! 🏆'
+              : streak > 100
+              ? '⚡ BEYOND 100 DAYS: LEGENDARY RUN ⚡'
+              : "TODAY'S STREAK UNLOCKED! 🔥"}
+          </Text>
+          <Text style={[styles.streakNumber, streak >= 100 && styles.streakNumberCenturion]}>
+            DAY {streak} {streak >= 100 ? '👑' : ''}
+          </Text>
 
           {/* Subtitle / Fulfillment check */}
           <View style={styles.requirementsMetBox}>
@@ -182,25 +190,41 @@ export const StreakCelebrationModal = ({
           </View>
 
           {isMilestone && (
-            <View style={styles.milestoneBadge}>
-              <Ionicons name="gift" size={18} color="#eab308" />
-              <Text style={styles.milestoneText}>
-                10-Day Milestone! +1 Freeze Coin 🪙 Added to Vault
+            <View style={[styles.milestoneBadge, streak === 100 && styles.milestoneBadgeCenturion]}>
+              <Ionicons
+                name={streak === 100 ? 'trophy' : 'gift'}
+                size={18}
+                color={streak === 100 ? '#fbbf24' : '#eab308'}
+              />
+              <Text style={[styles.milestoneText, streak === 100 && styles.milestoneTextCenturion]}>
+                {streak === 100
+                  ? '👑 100-Day Grand Milestone! +1 Freeze Coin 🪙 Added to Vault'
+                  : '10-Day Milestone! +1 Freeze Coin 🪙 Added to Vault'}
               </Text>
             </View>
           )}
 
           <Text style={styles.affirmationText}>
-            "Discipline is the bridge between your Supreme Goal and reality."
+            {streak === 100
+              ? '"You conquered the 100-Day Challenge! What 99% of people quit, you finished. You are now officially in the elite tier."'
+              : streak > 100
+              ? '"Every day past Day 100 is building an empire. True mastery is continuous."'
+              : '"Discipline is the bridge between your Supreme Goal and reality."'}
           </Text>
 
           {/* Continue Button */}
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={[styles.continueBtn, streak >= 100 && styles.continueBtnCenturion]}
             onPress={onClose}
             activeOpacity={0.85}
           >
-            <Text style={styles.continueBtnText}>KEEP CRUSHING IT 🚀</Text>
+            <Text style={styles.continueBtnText}>
+              {streak === 100
+                ? 'ENTER THE NEXT LEVEL (DAY 101+) 🚀'
+                : streak > 100
+                ? `KEEP CRUSHING IT (DAY ${streak + 1}) 🚀`
+                : 'KEEP CRUSHING IT 🚀'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -261,12 +285,22 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginBottom: 4
   },
+  badgeLabelCenturion: {
+    color: '#fbbf24',
+    fontSize: 13.5
+  },
   streakNumber: {
     fontSize: 44,
     fontWeight: '900',
     color: '#ffffff',
     letterSpacing: -1,
     marginBottom: 14
+  },
+  streakNumberCenturion: {
+    color: '#fbbf24',
+    textShadowColor: 'rgba(251, 191, 36, 0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8
   },
   requirementsMetBox: {
     backgroundColor: '#0d1117',
@@ -302,11 +336,20 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     width: '100%'
   },
+  milestoneBadgeCenturion: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    borderColor: '#fbbf24',
+    borderWidth: 1.5
+  },
   milestoneText: {
     fontSize: 12,
     color: '#fde047',
     fontWeight: '700',
     flex: 1
+  },
+  milestoneTextCenturion: {
+    color: '#fbbf24',
+    fontWeight: '800'
   },
   affirmationText: {
     fontSize: 13,
@@ -327,6 +370,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 6
+  },
+  continueBtnCenturion: {
+    backgroundColor: '#ea580c',
+    borderWidth: 1.5,
+    borderColor: '#fbbf24',
+    shadowColor: '#f59e0b',
+    shadowOpacity: 0.6
   },
   continueBtnText: {
     color: '#ffffff',

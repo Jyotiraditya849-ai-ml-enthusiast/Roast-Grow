@@ -108,6 +108,21 @@ export const generateAIMessage = async ({
 
   // High-voltage contextual offline generative engine
   if (isHype) {
+    if (streak === 100) {
+      return {
+        text: '👑 100 DAYS CENTURION! You conquered the entire 100-Day Challenge! What 99% quit, you conquered. You are officially in the top 1%!',
+        type: 'hype',
+        source: 'offline-engine'
+      };
+    }
+    if (streak > 100) {
+      return {
+        text: `⚡ Day ${streak}! You went beyond the 100-day target and now you're building an unstoppable developer empire day by day!`,
+        type: 'hype',
+        source: 'offline-engine'
+      };
+    }
+
     const generator = FALLBACK_HYPE_MESSAGES[Math.floor(Math.random() * FALLBACK_HYPE_MESSAGES.length)];
     return {
       text: generator(streak, completedHabitCount, mood),

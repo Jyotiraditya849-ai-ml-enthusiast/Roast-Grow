@@ -128,7 +128,7 @@ export const SupremeGoalCard = ({
       <View style={styles.headerRow}>
         <View style={styles.badgeContainer}>
           <View style={styles.badgeIcon}>
-            <Ionicons name="trophy" size={14} color="#f59e0b" />
+            <Ionicons name="trophy" size={13} color="#f59e0b" />
           </View>
           <Text style={styles.badgeText}>SUPREME GOAL</Text>
         </View>
@@ -148,7 +148,7 @@ export const SupremeGoalCard = ({
             onPress={onOpenSettings}
             activeOpacity={0.7}
           >
-            <Feather name="edit-3" size={15} color="#f0f6fc" />
+            <Feather name="edit-3" size={14} color="#f0f6fc" />
           </TouchableOpacity>
         </View>
       </View>
@@ -174,8 +174,8 @@ export const SupremeGoalCard = ({
             onPress={() => setShowRoadmapList(!showRoadmapList)}
             activeOpacity={0.8}
           >
-            <Ionicons name="git-network-outline" size={16} color="#eab308" />
-            <Text style={styles.roadmapTitle}>Roadmap Milestones</Text>
+            <Ionicons name="git-network-outline" size={15} color="#eab308" />
+            <Text style={styles.roadmapTitle} numberOfLines={1}>Roadmap Milestones</Text>
             <Text style={styles.roadmapRatio}>
               ({completedMilestones}/{totalMilestones})
             </Text>
@@ -193,8 +193,8 @@ export const SupremeGoalCard = ({
               onPress={handleUploadRoadmapFile}
               activeOpacity={0.75}
             >
-              <Ionicons name="add-circle" size={16} color="#eab308" />
-              <Text style={styles.plusUploadText}>+ Roadmap File/PDF</Text>
+              <Ionicons name="add-circle" size={15} color="#eab308" />
+              <Text style={styles.plusUploadText}>Roadmap Doc/PDF</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -269,14 +269,16 @@ export const SupremeGoalCard = ({
         )}
       </View>
 
-      {/* TODAY'S SINGLE SUPREME GOAL (Clean, Exactly as Before) */}
+      {/* TODAY'S SINGLE SUPREME GOAL (Clean, Mobile Responsive) */}
       <View style={styles.dailyMissionBox}>
         <View style={styles.missionHeader}>
           <View style={styles.missionHeaderLeft}>
-            <Ionicons name="sparkles" size={15} color="#f59e0b" />
+            <Ionicons name="sparkles" size={14} color="#f59e0b" />
             <Text style={styles.missionTitle}>Today's Supreme Mission</Text>
           </View>
-          <Text style={styles.singleGoalNotice}>1 Daily Non-Negotiable Step</Text>
+          <View style={styles.singleGoalBadge}>
+            <Text style={styles.singleGoalNotice}>1 Non-Negotiable Step</Text>
+          </View>
         </View>
 
         {isEditingDaily || !hasDailyGoal ? (
@@ -284,7 +286,7 @@ export const SupremeGoalCard = ({
           <View style={styles.dailyInputContainer}>
             <TextInput
               style={styles.dailyInput}
-              placeholder="e.g. Code auth system & revise GraphQL algorithms"
+              placeholder="e.g. Code auth system & revise algorithms"
               placeholderTextColor="#6e7681"
               value={dailyGoalInput}
               onChangeText={setDailyGoalInput}
@@ -313,7 +315,7 @@ export const SupremeGoalCard = ({
             </View>
           </View>
         ) : (
-          /* Display Today's Single Goal with Checkbox (Clean, No Proof Clutter) */
+          /* Display Today's Single Goal with Checkbox */
           <View
             style={[
               styles.missionRow,
@@ -477,249 +479,279 @@ export const SupremeGoalCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#161b22',
-    borderRadius: 20,
-    padding: 18,
-    marginHorizontal: 16,
+    backgroundColor: '#111620',
+    borderRadius: 22,
+    padding: 16,
+    marginHorizontal: 12,
     marginVertical: 10,
     borderWidth: 1.5,
-    borderColor: 'rgba(234, 179, 8, 0.4)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    overflow: 'hidden',
     shadowColor: '#f59e0b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12
+    marginBottom: 12,
+    flexWrap: 'wrap',
+    gap: 8
   },
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(234, 179, 8, 0.12)',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#eab308'
+    borderWidth: 1.2,
+    borderColor: '#fbbf24'
   },
   badgeIcon: {
     justifyContent: 'center',
     alignItems: 'center'
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '900',
-    color: '#eab308',
+    color: '#fbbf24',
     letterSpacing: 1.2
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8
+    gap: 6,
+    flexShrink: 1
   },
   deadlineContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#21262d',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    gap: 5,
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+    flexShrink: 1
   },
   deadlineText: {
     fontSize: 11,
-    color: '#f59e0b',
-    fontWeight: '700'
+    color: '#fbbf24',
+    fontWeight: '800',
+    letterSpacing: 0.3
   },
   editBtn: {
-    backgroundColor: '#21262d',
-    padding: 6,
-    borderRadius: 8,
+    backgroundColor: '#1a202c',
+    padding: 7,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: '#334155'
   },
   goalInfo: {
-    marginBottom: 12
+    marginBottom: 14
   },
   goalTitle: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '900',
     color: '#ffffff',
-    letterSpacing: -0.3,
-    marginBottom: 4
+    letterSpacing: -0.4,
+    marginBottom: 5
   },
   goalDescription: {
     fontSize: 13,
-    color: '#8b949e',
-    lineHeight: 18
+    color: '#94a3b8',
+    lineHeight: 19
   },
   roadmapCard: {
-    backgroundColor: '#0d1117',
-    borderRadius: 14,
-    padding: 12,
+    backgroundColor: '#090d14',
+    borderRadius: 16,
+    padding: 13,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: 'rgba(245, 158, 11, 0.25)',
+    overflow: 'hidden'
   },
   roadmapHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10
   },
   roadmapHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 6,
+    flexShrink: 1,
+    minWidth: 130
   },
   roadmapTitle: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#f0f6fc'
+    fontWeight: '800',
+    color: '#f8fafc'
   },
   roadmapRatio: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#eab308'
+    fontWeight: '900',
+    color: '#fbbf24',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
   },
   roadmapHeaderRight: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6
+    alignItems: 'center'
   },
   plusUploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#161b22',
+    backgroundColor: '#161d28',
     borderWidth: 1,
-    borderColor: '#eab308',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderColor: 'rgba(245, 158, 11, 0.45)',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 8
   },
   plusUploadText: {
     fontSize: 11,
-    color: '#f59e0b',
-    fontWeight: '700'
+    color: '#fbbf24',
+    fontWeight: '800'
   },
   progressBarTrack: {
-    height: 6,
-    backgroundColor: '#21262d',
-    borderRadius: 3,
+    height: 7,
+    backgroundColor: '#1a2230',
+    borderRadius: 4,
     overflow: 'hidden'
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#eab308',
-    borderRadius: 3
+    backgroundColor: '#fbbf24',
+    borderRadius: 4
   },
   attachedRoadmapPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#161b22',
+    backgroundColor: '#131924',
     borderWidth: 1,
-    borderColor: '#30363d',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginTop: 8
+    borderColor: '#2d3748',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+    overflow: 'hidden'
   },
   attachedRoadmapTouch: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 8
   },
   attachedRoadmapName: {
     fontSize: 12,
-    color: '#f0f6fc',
+    color: '#f8fafc',
     fontWeight: '600',
     flex: 1
   },
   viewBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    backgroundColor: '#238636',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    gap: 3,
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 6
   },
   viewBadgeText: {
     color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700'
+    fontSize: 10.5,
+    fontWeight: '800'
   },
   removeRoadmapAttachBtn: {
-    padding: 2,
+    padding: 3,
     marginLeft: 6
   },
   milestoneList: {
-    marginTop: 10,
-    gap: 6,
+    marginTop: 12,
+    gap: 8,
     borderTopWidth: 1,
-    borderTopColor: '#21262d',
-    paddingTop: 8
+    borderTopColor: '#1e2636',
+    paddingTop: 10
   },
   milestoneItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 3
+    gap: 9,
+    paddingVertical: 4
   },
   milestoneText: {
     fontSize: 13,
-    color: '#f0f6fc',
-    flex: 1
+    color: '#e2e8f0',
+    flex: 1,
+    fontWeight: '500'
   },
   milestoneDoneText: {
     textDecorationLine: 'line-through',
-    color: '#8b949e'
+    color: '#64748b'
   },
   dailyMissionBox: {
-    backgroundColor: '#0d1117',
+    backgroundColor: '#090d14',
     borderRadius: 16,
-    padding: 14,
+    padding: 13,
     marginBottom: 14,
     borderWidth: 1.5,
-    borderColor: '#30363d'
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    overflow: 'hidden'
   },
   missionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
     marginBottom: 10
   },
   missionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 6,
+    flexShrink: 1
   },
   missionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#f59e0b'
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#fbbf24',
+    letterSpacing: 0.2
+  },
+  singleGoalBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)'
   },
   singleGoalNotice: {
-    fontSize: 11,
-    color: '#8b949e',
-    fontStyle: 'italic'
+    fontSize: 10.5,
+    color: '#fbbf24',
+    fontWeight: '700'
   },
   dailyInputContainer: {
-    gap: 8
+    gap: 10,
+    width: '100%'
   },
   dailyInput: {
-    backgroundColor: '#161b22',
-    borderWidth: 1,
-    borderColor: '#30363d',
+    backgroundColor: '#111620',
+    borderWidth: 1.5,
+    borderColor: '#2d3748',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -728,45 +760,56 @@ const styles = StyleSheet.create({
   },
   dailyInputActions: {
     flexDirection: 'row',
-    gap: 8
+    gap: 8,
+    flexWrap: 'wrap'
   },
   setMissionBtn: {
-    backgroundColor: '#d97706',
+    backgroundColor: '#ea580c',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 10
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 3
   },
   setMissionBtnText: {
     color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 13
+    fontWeight: '900',
+    fontSize: 13,
+    letterSpacing: 0.3
   },
   cancelDailyBtn: {
-    backgroundColor: '#21262d',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    backgroundColor: '#1e2430',
+    paddingVertical: 9,
+    paddingHorizontal: 14,
     borderRadius: 10,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#334155'
   },
   cancelDailyText: {
-    color: '#8b949e',
-    fontSize: 13
+    color: '#94a3b8',
+    fontSize: 13,
+    fontWeight: '600'
   },
   missionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#161b22',
-    padding: 12,
+    backgroundColor: '#111620',
+    padding: 13,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#30363d'
+    borderWidth: 1.5,
+    borderColor: '#2d3748',
+    overflow: 'hidden'
   },
   missionRowCompleted: {
-    borderColor: '#22c55e',
-    backgroundColor: 'rgba(34, 197, 94, 0.08)'
+    borderColor: 'rgba(34, 197, 94, 0.6)',
+    backgroundColor: 'rgba(34, 197, 94, 0.12)'
   },
   checkboxWrapper: {
     flex: 1,
@@ -775,90 +818,105 @@ const styles = StyleSheet.create({
     gap: 12
   },
   checkbox: {
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#6e7681',
+    borderColor: '#475569',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0d1117'
+    backgroundColor: '#090d14'
   },
   checkboxActive: {
     backgroundColor: '#22c55e',
-    borderColor: '#22c55e'
+    borderColor: '#22c55e',
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3
   },
   missionTextContainer: {
     flex: 1
   },
   missionText: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14.5,
+    fontWeight: '800',
     color: '#ffffff',
     lineHeight: 20
   },
   missionTextCompleted: {
     textDecorationLine: 'line-through',
-    color: '#8b949e'
+    color: '#94a3b8'
   },
   missionStatusSub: {
     fontSize: 11,
-    color: '#8b949e',
-    marginTop: 2
+    color: '#94a3b8',
+    marginTop: 3,
+    fontWeight: '600'
   },
   editDailyBtn: {
-    padding: 6,
+    backgroundColor: '#1e2430',
+    padding: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
     marginLeft: 6
   },
   ruleBox: {
     backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#b91c1c'
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(239, 68, 68, 0.45)',
+    overflow: 'hidden'
   },
   ruleBoxReady: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderColor: '#d97706'
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderColor: '#f59e0b'
   },
   ruleBoxSuccess: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    borderColor: '#15803d'
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+    borderColor: '#22c55e'
   },
   ruleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8
+    gap: 7,
+    marginBottom: 9,
+    flexWrap: 'wrap'
   },
   ruleTitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '900',
-    color: '#ef4444',
-    letterSpacing: 0.8
+    color: '#f87171',
+    letterSpacing: 0.8,
+    flexShrink: 1
   },
   reqGrid: {
     flexDirection: 'column',
-    gap: 6,
-    marginBottom: 8
+    gap: 7,
+    marginBottom: 9
   },
   reqItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 7,
+    flexWrap: 'wrap'
   },
   reqItemText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#ef4444'
+    fontWeight: '700',
+    color: '#f87171',
+    flexShrink: 1
   },
   reqItemTextDone: {
     color: '#22c55e'
   },
   ruleExplainText: {
     fontSize: 11,
-    color: '#8b949e',
-    lineHeight: 15
+    color: '#94a3b8',
+    lineHeight: 16
   },
   modalOverlay: {
     flex: 1,

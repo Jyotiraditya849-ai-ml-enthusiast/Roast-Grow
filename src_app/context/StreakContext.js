@@ -29,6 +29,11 @@ import {
 } from '../storage/asyncStorage';
 import { generateAIMessage } from '../services/aiService';
 import { syncToNativeWidget } from '../storage/widgetBridge';
+import {
+  scheduleAllAppNotifications,
+  sendInstantTestNotification,
+  requestNotificationPermissions
+} from '../services/notificationService';
 import { useAuth } from './AuthContext';
 
 const StreakContext = createContext(null);
@@ -118,6 +123,9 @@ export const StreakProvider = ({ children }) => {
         totalHabitsCount: todayHabitsCount,
         incompleteHabitsCount: todayIncompleteCount
       });
+
+      // Schedule 3x daily reminders and Supreme Goal deadline alerts
+      await scheduleAllAppNotifications(loadedSupreme);
     } catch (err) {
       console.error('Initialization error:', err);
     } finally {
@@ -320,6 +328,8 @@ export const StreakProvider = ({ children }) => {
     const updated = await updateSupremeDetails(details);
     setSupremeGoal(updated);
     await syncWidgetState({ supreme: updated });
+    // Reschedule notifications with updated deadline & goal title
+    await scheduleAllAppNotifications(updated);
     return updated;
   };
 
@@ -489,7 +499,10 @@ export const StreakProvider = ({ children }) => {
         resetStreak,
         simulateMissedDay,
         syncWidgetState,
-        initApp
+        initApp,
+        scheduleAllAppNotifications,
+        sendInstantTestNotification,
+        requestNotificationPermissions
       }}
     >
       {children}

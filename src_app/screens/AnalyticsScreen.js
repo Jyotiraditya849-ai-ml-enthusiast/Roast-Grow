@@ -14,20 +14,26 @@ export const AnalyticsScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Metric Cards Row */}
         <View style={styles.metricsRow}>
-          <View style={styles.metricCard}>
-            <Ionicons name="flame" size={24} color="#f97316" />
-            <Text style={styles.metricValue}>{challenge.currentStreak}</Text>
+          <View style={[styles.metricCard, styles.streakMetricCard]}>
+            <View style={styles.metricIconWrapOrange}>
+              <Ionicons name="flame" size={20} color="#f97316" />
+            </View>
+            <Text style={[styles.metricValue, { color: '#f97316' }]}>{challenge.currentStreak}</Text>
             <Text style={styles.metricLabel}>CURRENT STREAK</Text>
           </View>
 
-          <View style={styles.metricCard}>
-            <Ionicons name="trophy" size={24} color="#eab308" />
-            <Text style={styles.metricValue}>{challenge.bestStreak || challenge.currentStreak}</Text>
+          <View style={[styles.metricCard, styles.trophyMetricCard]}>
+            <View style={styles.metricIconWrapGold}>
+              <Ionicons name="trophy" size={18} color="#eab308" />
+            </View>
+            <Text style={[styles.metricValue, { color: '#eab308' }]}>{challenge.bestStreak || challenge.currentStreak}</Text>
             <Text style={styles.metricLabel}>ALL-TIME BEST</Text>
           </View>
 
-          <View style={styles.metricCard}>
-            <FontAwesome5 name="snowflake" size={20} color="#38bdf8" />
+          <View style={[styles.metricCard, styles.freezeMetricCard]}>
+            <View style={styles.metricIconWrapCyan}>
+              <FontAwesome5 name="snowflake" size={16} color="#38bdf8" />
+            </View>
             <Text style={[styles.metricValue, { color: '#38bdf8' }]}>{freezeCoins}</Text>
             <Text style={styles.metricLabel}>FREEZE VAULT</Text>
           </View>
@@ -76,7 +82,7 @@ export const AnalyticsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0d1117'
+    backgroundColor: '#090d14'
   },
   scrollContent: {
     paddingVertical: 14,
@@ -85,63 +91,110 @@ const styles = StyleSheet.create({
   metricsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    gap: 10,
-    marginBottom: 6
+    paddingHorizontal: 12,
+    gap: 8,
+    marginBottom: 8
   },
   metricCard: {
     flex: 1,
-    backgroundColor: '#161b22',
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: '#111620',
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#30363d'
+    borderWidth: 1.5,
+    borderColor: '#1e2636',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3
+  },
+  streakMetricCard: {
+    borderColor: 'rgba(249, 115, 22, 0.4)',
+    shadowColor: '#ea580c'
+  },
+  trophyMetricCard: {
+    borderColor: 'rgba(234, 179, 8, 0.4)',
+    shadowColor: '#eab308'
+  },
+  freezeMetricCard: {
+    borderColor: 'rgba(56, 189, 248, 0.4)',
+    shadowColor: '#38bdf8'
+  },
+  metricIconWrapOrange: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(249, 115, 22, 0.14)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  metricIconWrapGold: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(234, 179, 8, 0.14)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  metricIconWrapCyan: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   metricValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
-    color: '#f0f6fc',
+    color: '#f8fafc',
     marginTop: 6,
     marginBottom: 2
   },
   metricLabel: {
     fontSize: 9,
-    fontWeight: '700',
-    color: '#8b949e',
-    letterSpacing: 0.6
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.8
   },
   insightsCard: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
+    backgroundColor: '#111620',
+    borderRadius: 20,
     padding: 18,
-    marginHorizontal: 16,
-    marginTop: 4,
+    marginHorizontal: 12,
+    marginTop: 8,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: '#1e2636',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3
   },
   insightsTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#f0f6fc',
+    fontWeight: '900',
+    color: '#f8fafc',
+    letterSpacing: -0.2,
     marginBottom: 14
   },
   insightItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 11,
     borderBottomWidth: 1,
-    borderColor: '#21262d'
+    borderColor: '#1a2230'
   },
   insightLabel: {
-    color: '#8b949e',
+    color: '#94a3b8',
     fontSize: 13,
     fontWeight: '600'
   },
   insightVal: {
-    color: '#f0f6fc',
+    color: '#f8fafc',
     fontSize: 13,
-    fontWeight: '700'
+    fontWeight: '800'
   }
 });
 

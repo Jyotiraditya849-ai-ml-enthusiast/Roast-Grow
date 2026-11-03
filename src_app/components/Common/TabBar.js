@@ -25,28 +25,31 @@ export const TabBar = ({ activeTab, onSelectTab }) => {
         return (
           <TouchableOpacity
             key={tab.key}
-            style={[styles.tabButton, isActive && styles.tabButtonActive]}
+            style={[
+              styles.tabButton,
+              isActive && (tab.key === 'vault' ? styles.tabButtonActiveBlue : styles.tabButtonActiveOrange)
+            ]}
             onPress={() => handlePress(tab.key)}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
             {tab.type === 'ion' && (
               <Ionicons
                 name={tab.icon}
-                size={20}
+                size={isActive ? 21 : 19}
                 color={isActive ? '#f97316' : '#6e7681'}
               />
             )}
             {tab.type === 'feather' && (
               <Feather
                 name={tab.icon}
-                size={20}
+                size={isActive ? 21 : 19}
                 color={isActive ? '#f97316' : '#6e7681'}
               />
             )}
             {tab.type === 'fa5' && (
               <FontAwesome5
                 name={tab.icon}
-                size={18}
+                size={isActive ? 19 : 17}
                 color={isActive ? '#38bdf8' : '#6e7681'}
               />
             )}
@@ -68,11 +71,12 @@ export const TabBar = ({ activeTab, onSelectTab }) => {
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#161b22',
-    borderTopWidth: 1,
-    borderColor: '#30363d',
-    paddingVertical: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+    backgroundColor: '#0a0e14',
+    borderTopWidth: 1.5,
+    borderColor: '#1e2430',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
     justifyContent: 'space-around',
     alignItems: 'center'
   },
@@ -80,19 +84,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    gap: 4
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    gap: 3
   },
-  tabButtonActive: {},
+  tabButtonActiveOrange: {
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(249, 115, 22, 0.35)'
+  },
+  tabButtonActiveBlue: {
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.35)'
+  },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '700',
     color: '#6e7681'
   },
   tabLabelActive: {
-    color: '#f97316'
+    color: '#f97316',
+    fontWeight: '800'
   },
   tabLabelBlue: {
-    color: '#38bdf8'
+    color: '#38bdf8',
+    fontWeight: '800'
   }
 });
 

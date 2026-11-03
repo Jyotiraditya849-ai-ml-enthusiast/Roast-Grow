@@ -111,20 +111,25 @@ export const JournalScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0d1117'
+    backgroundColor: '#090d14'
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 14,
     paddingBottom: 40
   },
   todayCard: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
+    backgroundColor: '#111620',
+    borderRadius: 20,
     padding: 18,
-    borderWidth: 1,
-    borderColor: '#30363d',
-    marginBottom: 20
+    borderWidth: 1.5,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+    marginBottom: 20,
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4
   },
   todayHeader: {
     flexDirection: 'row',
@@ -134,29 +139,31 @@ const styles = StyleSheet.create({
   },
   cardSuperTitle: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#8b949e',
+    fontWeight: '900',
+    color: '#38bdf8',
     letterSpacing: 1.2
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#f0f6fc',
+    fontWeight: '900',
+    color: '#f8fafc',
     marginTop: 2
   },
   editBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#238636',
+    backgroundColor: '#0284c7',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
     gap: 6
   },
   editBtnText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700'
+    fontWeight: '800'
   },
   todayBody: {
     marginTop: 4
@@ -172,7 +179,7 @@ const styles = StyleSheet.create({
   },
   todayTextSnippet: {
     flex: 1,
-    color: '#e6edf3',
+    color: '#e2e8f0',
     fontSize: 14,
     lineHeight: 20,
     fontStyle: 'italic'
@@ -215,12 +222,12 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   feedCard: {
-    backgroundColor: '#161b22',
-    borderRadius: 14,
+    backgroundColor: '#111620',
+    borderRadius: 16,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#21262d'
+    borderColor: '#1e2636'
   },
   feedCardHeader: {
     flexDirection: 'row',

@@ -11,6 +11,7 @@ import { getLocalDateString } from '../../storage/asyncStorage';
 const CELL_SIZE = 12;
 const CELL_GAP = 3;
 const WEEKS_COUNT = 52;
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 // Dark Mode Color Palette
 const COLOR_EMPTY = '#21262d';
@@ -29,6 +30,12 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
   const [selectedDay, setSelectedDay] = useState(null);
 
   const todayStr = useMemo(() => getLocalDateString(), []);
+  const todayDayOfWeekIndex = useMemo(() => {
+    // JavaScript getDay(): 0 = Sun, 1 = Mon, ..., 6 = Sat
+    // Grid rows: 0 = Mon, 1 = Tue, 2 = Wed, 3 = Thu, 4 = Fri, 5 = Sat, 6 = Sun
+    const d = new Date().getDay();
+    return (d + 6) % 7;
+  }, []);
 
   // Compute 52-week grid based on mode
   const { weeks, monthLabels, totalActiveDays, challengeDayCount } = useMemo(() => {
@@ -172,14 +179,26 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
 
       {/* Grid Container */}
       <View style={styles.gridWrapper}>
-        {/* Day of Week Labels */}
+        {/* Day of Week Labels (All 7 Days) */}
         <View style={styles.dayLabelsCol}>
           <View style={styles.monthHeaderSpacer} />
-          <Text style={styles.dayLabel}>Mon</Text>
-          <Text style={[styles.dayLabel, { marginTop: CELL_SIZE + CELL_GAP }]}></Text>
-          <Text style={styles.dayLabel}>Wed</Text>
-          <Text style={[styles.dayLabel, { marginTop: CELL_SIZE + CELL_GAP }]}></Text>
-          <Text style={styles.dayLabel}>Fri</Text>
+          <View style={styles.dayLabelsList}>
+            {DAYS_OF_WEEK.map((dayName, idx) => {
+              const isTodayDay = idx === todayDayOfWeekIndex;
+              return (
+                <View key={dayName} style={styles.dayLabelItem}>
+                  <Text
+                    style={[
+                      styles.dayLabelText,
+                      isTodayDay && styles.dayLabelTextToday
+                    ]}
+                  >
+                    {dayName}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
         </View>
 
         {/* Scrollable Heatmap Weeks */}
@@ -298,13 +317,18 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
+    backgroundColor: '#111620',
+    borderRadius: 20,
     padding: 16,
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#30363d'
+    borderWidth: 1.5,
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4
   },
   header: {
     flexDirection: 'row',
@@ -376,16 +400,29 @@ const styles = StyleSheet.create({
   },
   dayLabelsCol: {
     width: 28,
-    marginRight: 4
+    marginRight: 6
   },
   monthHeaderSpacer: {
     height: 18
   },
-  dayLabel: {
-    fontSize: 9,
-    color: '#6e7681',
-    height: CELL_SIZE + CELL_GAP,
-    lineHeight: CELL_SIZE
+  dayLabelsList: {
+    flexDirection: 'column',
+    gap: CELL_GAP
+  },
+  dayLabelItem: {
+    height: CELL_SIZE,
+    justifyContent: 'center'
+  },
+  dayLabelText: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: '#8b949e',
+    textAlign: 'right',
+    includeFontPadding: false
+  },
+  dayLabelTextToday: {
+    color: '#f97316',
+    fontWeight: '900'
   },
   scrollArea: {
     flex: 1

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Component } from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 import { AuthProvider, useAuth } from './src_app/context/AuthContext';
 import { StreakProvider, useStreak } from './src_app/context/StreakContext';
 import { Header } from './src_app/components/Common/Header';
@@ -124,10 +125,17 @@ export default function App() {
       document.body.style.margin = '0';
       document.body.style.padding = '0';
     }
+
+    if (Platform.OS !== 'web') {
+      const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log('[App] Notification tapped:', response.notification?.request?.content?.title);
+      });
+      return () => sub.remove();
+    }
   }, []);
 
   return (
-    <SafeAreaProvider initialMetrics={initialMetrics} style={styles.safeArea}>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics} style={styles.safeArea}>
       <GlobalErrorBoundary>
         <AuthProvider>
           <RootRouter />
@@ -165,12 +173,12 @@ const styles = StyleSheet.create({
   },
   appContainer: {
     flex: 1,
-    backgroundColor: '#0d1117',
+    backgroundColor: '#090d14',
     width: '100%',
     maxWidth: Platform.OS === 'web' ? 520 : '100%',
     borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
     borderRightWidth: Platform.OS === 'web' ? 1 : 0,
-    borderColor: '#21262d',
+    borderColor: '#1e2636',
     minHeight: Platform.OS === 'web' ? '100vh' : '100%'
   },
   screenContainer: {

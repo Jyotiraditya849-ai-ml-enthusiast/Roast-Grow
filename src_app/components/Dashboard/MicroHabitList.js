@@ -44,20 +44,28 @@ export const MicroHabitList = ({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Daily Micro-Habits</Text>
+        <View style={styles.titleGroup}>
+          <View style={styles.titleRow}>
+            <Ionicons name="flash" size={17} color="#22c55e" />
+            <Text style={styles.title}>Daily Micro-Habits</Text>
+          </View>
           <Text style={styles.subtitle}>Micro-habit stacking for maximum consistency</Text>
         </View>
 
-        <View style={styles.progressPill}>
-          <Text style={styles.progressText}>
-            {completedCount}/{totalCount} Done
+        <View style={[styles.progressPill, completedCount >= 3 && styles.progressPillLocked]}>
+          <Ionicons
+            name={completedCount >= 3 ? 'shield-checkmark' : 'flame'}
+            size={13}
+            color={completedCount >= 3 ? '#22c55e' : '#f97316'}
+          />
+          <Text style={[styles.progressText, completedCount >= 3 && styles.progressTextLocked]}>
+            {completedCount >= 3 ? `${completedCount}/3 Done ✓` : `${completedCount}/3 to Lock`}
           </Text>
         </View>
       </View>
 
       {/* Habit Items */}
-      {habits.map((habit) => {
+      {habits.map((habit, index) => {
         const isDone = habit.completedToday;
         return (
           <View
@@ -69,9 +77,16 @@ export const MicroHabitList = ({
               onPress={() => handleToggle(habit.id)}
               activeOpacity={0.7}
             >
+              <View style={[styles.habitIndexBadge, isDone && styles.habitIndexBadgeDone]}>
+                <Text style={[styles.habitIndexText, isDone && styles.habitIndexTextDone]}>
+                  {index < 9 ? `0${index + 1}` : index + 1}
+                </Text>
+              </View>
+
               <View style={[styles.checkbox, isDone && styles.checkboxActive]}>
                 {isDone && <Ionicons name="checkmark" size={16} color="#ffffff" />}
               </View>
+
               <Text style={[styles.habitTitle, isDone && styles.habitTitleCompleted]}>
                 {habit.title}
               </Text>
@@ -82,7 +97,7 @@ export const MicroHabitList = ({
               onPress={() => onDeleteHabit(habit.id)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Feather name="trash-2" size={15} color="#484f58" />
+              <Feather name="trash-2" size={14} color="#6e7681" />
             </TouchableOpacity>
           </View>
         );
@@ -131,90 +146,143 @@ export const MicroHabitList = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
-    padding: 18,
-    marginHorizontal: 16,
+    backgroundColor: '#111620',
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 12,
     marginVertical: 6,
-    borderWidth: 1,
-    borderColor: '#30363d'
+    borderWidth: 1.5,
+    borderColor: 'rgba(34, 197, 94, 0.25)',
+    overflow: 'hidden',
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14
+    marginBottom: 14,
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  titleGroup: {
+    flex: 1,
+    minWidth: 160
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
   },
   title: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#f0f6fc'
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: -0.2
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#8b949e',
     marginTop: 2
   },
   progressPill: {
-    backgroundColor: '#21262d',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: 'rgba(249, 115, 22, 0.4)'
+  },
+  progressPillLocked: {
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    borderColor: 'rgba(34, 197, 94, 0.5)'
   },
   progressText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#58a6ff'
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#f97316'
+  },
+  progressTextLocked: {
+    color: '#22c55e'
   },
   habitRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#0d1117',
+    backgroundColor: '#0a0e14',
     paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#21262d'
+    borderColor: '#1e2430'
   },
   habitRowCompleted: {
-    borderColor: '#238636',
-    backgroundColor: '#0f2417'
+    borderColor: 'rgba(34, 197, 94, 0.45)',
+    backgroundColor: 'rgba(34, 197, 94, 0.08)'
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1
   },
+  habitIndexBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: '#161b22',
+    borderWidth: 1,
+    borderColor: '#2d333b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10
+  },
+  habitIndexBadgeDone: {
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    borderColor: 'rgba(34, 197, 94, 0.4)'
+  },
+  habitIndexText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#8b949e'
+  },
+  habitIndexTextDone: {
+    color: '#22c55e'
+  },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: '#484f58',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12
+    marginRight: 12,
+    backgroundColor: '#0d1117'
   },
   checkboxActive: {
-    backgroundColor: '#238636',
-    borderColor: '#2ea043'
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e'
   },
   habitTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#e6edf3',
+    fontWeight: '700',
+    color: '#f0f6fc',
     flex: 1
   },
   habitTitleCompleted: {
-    color: '#7ee787',
+    color: '#8b949e',
     textDecorationLine: 'line-through'
   },
   deleteButton: {
-    padding: 4
+    padding: 6,
+    marginLeft: 6
   },
   addHabitButton: {
     flexDirection: 'row',

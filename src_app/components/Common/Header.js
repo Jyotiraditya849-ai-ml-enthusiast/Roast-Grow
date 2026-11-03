@@ -44,12 +44,18 @@ export const Header = ({ currentStreak, isBroken }) => {
         <View style={styles.leftGroup}>
           <View style={styles.avatarBadge}>
             <Text style={styles.avatarEmoji}>{currentUser?.avatar || '🔥'}</Text>
+            <View style={styles.avatarOnlineDot} />
           </View>
-          <View>
-            <Text style={styles.userName} numberOfLines={1}>
-              {currentUser?.displayName || 'Challenger'}
-            </Text>
-            <Text style={styles.userHandle}>
+          <View style={{ flex: 1, paddingRight: 6 }}>
+            <View style={styles.userNameRow}>
+              <Text style={styles.userName} numberOfLines={1}>
+                {currentUser?.displayName || 'Challenger'}
+              </Text>
+              <View style={styles.proBadge}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+            </View>
+            <Text style={styles.userHandle} numberOfLines={1}>
               @{currentUser?.username || 'guest'} • {todayFormatted}
             </Text>
           </View>
@@ -60,7 +66,7 @@ export const Header = ({ currentStreak, isBroken }) => {
           <View style={[styles.streakIndicator, isBroken && styles.streakBroken]}>
             <Ionicons
               name={isBroken ? 'skull' : 'flame'}
-              size={14}
+              size={16}
               color={isBroken ? '#ef4444' : '#f97316'}
             />
             <Text style={[styles.streakCountText, isBroken && styles.textRed]}>
@@ -74,7 +80,7 @@ export const Header = ({ currentStreak, isBroken }) => {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             title="Log Out"
           >
-            <Feather name="log-out" size={16} color="#8b949e" />
+            <Feather name="log-out" size={15} color="#8b949e" />
           </TouchableOpacity>
         </View>
       </View>
@@ -103,27 +109,60 @@ const styles = StyleSheet.create({
     flex: 1
   },
   avatarBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 14,
     backgroundColor: '#161b22',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#30363d'
+    borderWidth: 1.5,
+    borderColor: 'rgba(249, 115, 22, 0.4)',
+    position: 'relative'
   },
   avatarEmoji: {
-    fontSize: 20
+    fontSize: 22
+  },
+  avatarOnlineDot: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#22c55e',
+    borderWidth: 2,
+    borderColor: '#0d1117'
+  },
+  userNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
   },
   userName: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#f0f6fc'
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: -0.2
+  },
+  proBadge: {
+    backgroundColor: 'rgba(249, 115, 22, 0.15)',
+    borderWidth: 1,
+    borderColor: '#f97316',
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1
+  },
+  proBadgeText: {
+    color: '#f97316',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5
   },
   userHandle: {
     fontSize: 11,
     color: '#8b949e',
-    fontWeight: '600'
+    fontWeight: '600',
+    marginTop: 1
   },
   rightGroup: {
     flexDirection: 'row',
@@ -133,29 +172,29 @@ const styles = StyleSheet.create({
   streakIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#161b22',
-    paddingHorizontal: 10,
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    paddingHorizontal: 11,
     paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#30363d',
-    gap: 4
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(249, 115, 22, 0.6)',
+    gap: 5
   },
   streakBroken: {
-    borderColor: '#7f1d1d',
-    backgroundColor: '#1a1012'
+    borderColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)'
   },
   streakCountText: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '900',
     color: '#f97316'
   },
   textRed: {
     color: '#ef4444'
   },
   logoutBtn: {
-    padding: 8,
-    borderRadius: 10,
+    padding: 9,
+    borderRadius: 12,
     backgroundColor: '#161b22',
     borderWidth: 1,
     borderColor: '#30363d'

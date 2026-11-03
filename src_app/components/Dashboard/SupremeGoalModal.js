@@ -398,16 +398,20 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: '#30363d',
+    overflow: 'hidden'
   },
   roadmapHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 10
   },
   roadmapHeaderTitles: {
-    flex: 1
+    flex: 1,
+    minWidth: 160
   },
   plusFileBtn: {
     flexDirection: 'row',

@@ -107,6 +107,41 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
+  // Reset or remove PIN for an account (Forgot Password / PIN recovery)
+  const resetPin = async (username, newPin = '') => {
+    const cleanUser = username.trim().toLowerCase();
+    const accounts = await getAllStoredAccounts();
+    const userIndex = accounts.findIndex((a) => a.username.toLowerCase() === cleanUser);
+
+    if (userIndex === -1) {
+      throw new Error(`Account "@${cleanUser}" not found on this device.`);
+    }
+
+    const updatedUser = {
+      ...accounts[userIndex],
+      pin: newPin && newPin.trim().length > 0 ? newPin.trim() : null
+    };
+
+    const updatedAccounts = [...accounts];
+    updatedAccounts[userIndex] = updatedUser;
+
+    await saveAllStoredAccounts(updatedAccounts);
+    setSavedAccounts(updatedAccounts);
+
+    // Auto-login into the updated account
+    await saveStoredActiveSession(updatedUser.username);
+    setActiveUserStorageId(updatedUser.username);
+    setCurrentUser(updatedUser);
+
+    return updatedUser;
+  };
+
+  // Update or clear PIN for the currently logged in user
+  const updatePin = async (newPin = '') => {
+    if (!currentUser) return;
+    return await resetPin(currentUser.username, newPin);
+  };
+
   // Quick switch profile
   const switchAccount = async (targetUsername) => {
     return await login(targetUsername);
@@ -134,6 +169,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        resetPin,
+        updatePin,
         switchAccount,
         deleteAccount
       }}

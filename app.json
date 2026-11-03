@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Streak Tracker & Motivation",
+    "name": "Roast & Grow",
     "slug": "streak-tracker-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -27,23 +27,41 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0d1117"
+        "backgroundColor": "#000000"
       },
       "package": "com.streaktracker.app",
+      "versionCode": 2,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
       ]
     },
     "plugins": [
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Streak Tracker to access your photos for journal attachments.",
-          "cameraPermission": "Allow Streak Tracker to take photos for your streak proof."
+          "photosPermission": "Allow Roast & Grow to access your photos for journal attachments.",
+          "cameraPermission": "Allow Roast & Grow to take photos for your streak proof."
         }
-      ]
-    ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#f97316"
+        }
+      ],
+      "./plugins/withAndroidWidget"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b4216d26-b2e0-49e5-88d1-d23442cd2643"
+      }
+    }
   }
 }

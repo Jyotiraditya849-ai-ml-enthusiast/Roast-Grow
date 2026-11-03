@@ -122,16 +122,21 @@ export const FreezeCoinStore = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 10
   },
   vaultCard: {
-    backgroundColor: '#0c1a24',
-    borderRadius: 18,
+    backgroundColor: '#0a1622',
+    borderRadius: 20,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: '#0284c7',
-    marginBottom: 16
+    borderColor: 'rgba(56, 189, 248, 0.45)',
+    marginBottom: 16,
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 6
   },
   balanceRow: {
     flexDirection: 'row',
@@ -143,10 +148,10 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#03344d',
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#38bdf8'
   },
   balanceNumber: {
@@ -155,41 +160,52 @@ const styles = StyleSheet.create({
     color: '#38bdf8'
   },
   balanceLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#8b949e',
-    letterSpacing: 1
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 1.2
   },
   activateButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0284c7',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8
+    paddingVertical: 15,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+    gap: 8,
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4
   },
   disabledButton: {
-    backgroundColor: '#1f2937',
-    opacity: 0.6
+    backgroundColor: '#16202c',
+    borderColor: '#1e293b',
+    opacity: 0.6,
+    shadowOpacity: 0
   },
   activateButtonText: {
     color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '800'
+    fontSize: 13.5,
+    fontWeight: '900',
+    letterSpacing: 0.3
   },
   rulesCard: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
+    backgroundColor: '#111620',
+    borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: '#1e2636'
   },
   rulesTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#f0f6fc',
-    marginBottom: 14
+    fontWeight: '900',
+    color: '#f8fafc',
+    letterSpacing: -0.2,
+    marginBottom: 16
   },
   ruleItem: {
     flexDirection: 'row',

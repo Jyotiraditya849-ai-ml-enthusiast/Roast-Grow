@@ -207,21 +207,29 @@ export const DashboardScreen = ({ onNavigateToVault }) => {
         {/* 3. Daily Journal Quick Launcher */}
         <View style={styles.journalLauncherCard}>
           <View style={styles.journalLauncherHeader}>
-            <View>
-              <Text style={styles.journalLauncherTitle}>Daily Journal & Proof</Text>
-              <Text style={styles.journalLauncherSubtitle}>
-                {todayJournal
-                  ? `Logged today (${todayJournal.mood}) • ${todayJournal.photoUri ? '📸 Photo Attached' : 'Text Log'}`
-                  : 'No reflection logged yet for today.'}
-              </Text>
+            <View style={styles.journalLauncherLeft}>
+              <View style={styles.journalIconBox}>
+                <Ionicons name="book-outline" size={20} color="#38bdf8" />
+              </View>
+              <View style={styles.journalTextWrapper}>
+                <Text style={styles.journalLauncherTitle}>Daily Journal & Proof</Text>
+                <Text style={styles.journalLauncherSubtitle} numberOfLines={1}>
+                  {todayJournal
+                    ? `Logged today (${todayJournal.mood}) • ${todayJournal.photoUri ? '📸 Photo' : 'Text Log'}`
+                    : 'Reflect on today’s discipline & mindset.'}
+                </Text>
+              </View>
             </View>
             <TouchableOpacity
-              style={styles.journalLauncherBtn}
+              style={[
+                styles.journalLauncherBtn,
+                todayJournal && styles.journalLauncherBtnDone
+              ]}
               onPress={() => setJournalModalVisible(true)}
               activeOpacity={0.8}
             >
               <Text style={styles.journalLauncherBtnText}>
-                {todayJournal ? 'Edit Journal' : 'Write Log ✍️'}
+                {todayJournal ? 'Edit Log' : 'Write Log ✍️'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -261,15 +269,15 @@ export const DashboardScreen = ({ onNavigateToVault }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0d1117'
+    backgroundColor: '#090d14'
   },
   scrollContent: {
     paddingVertical: 10,
     paddingBottom: 40
   },
   actionContainer: {
-    marginHorizontal: 16,
-    marginVertical: 8
+    marginHorizontal: 12,
+    marginVertical: 10
   },
   primaryCheckInBtn: {
     flexDirection: 'row',
@@ -278,23 +286,28 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: '#ea580c',
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 16,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#fb923c',
     shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 6
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    elevation: 8
   },
   alreadyCheckedInBtn: {
-    backgroundColor: '#15803d',
-    shadowColor: '#22c55e'
+    backgroundColor: '#16a34a',
+    borderColor: '#4ade80',
+    shadowColor: '#22c55e',
+    shadowOpacity: 0.45
   },
   pendingBtn: {
-    backgroundColor: '#21262d',
-    borderWidth: 1,
-    borderColor: '#ef4444',
-    shadowOpacity: 0.1
+    backgroundColor: '#111620',
+    borderWidth: 1.5,
+    borderColor: 'rgba(239, 68, 68, 0.45)',
+    shadowOpacity: 0.15,
+    shadowColor: '#ef4444'
   },
   disabledBtn: {
     opacity: 0.7
@@ -302,43 +315,76 @@ const styles = StyleSheet.create({
   primaryCheckInText: {
     color: '#ffffff',
     fontWeight: '900',
-    fontSize: 14,
-    letterSpacing: 0.8
+    fontSize: 13.5,
+    letterSpacing: 0.6,
+    textAlign: 'center',
+    flexShrink: 1
   },
   journalLauncherCard: {
-    backgroundColor: '#161b22',
-    borderRadius: 18,
-    padding: 18,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    backgroundColor: '#111620',
+    borderRadius: 20,
+    padding: 15,
+    marginHorizontal: 12,
+    marginVertical: 10,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    overflow: 'hidden',
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3
   },
   journalLauncherHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10
+  },
+  journalLauncherLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1
+  },
+  journalIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+    justifyContent: 'center',
     alignItems: 'center'
   },
+  journalTextWrapper: {
+    flex: 1
+  },
   journalLauncherTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#f0f6fc'
+    color: '#f8fafc'
   },
   journalLauncherSubtitle: {
     fontSize: 12,
-    color: '#8b949e',
-    marginTop: 4,
-    maxWidth: 200
+    color: '#94a3b8',
+    marginTop: 2
   },
   journalLauncherBtn: {
-    backgroundColor: '#238636',
-    paddingVertical: 8,
+    backgroundColor: '#0284c7',
+    paddingVertical: 9,
     paddingHorizontal: 14,
-    borderRadius: 10
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#38bdf8'
+  },
+  journalLauncherBtnDone: {
+    backgroundColor: '#16a34a',
+    borderColor: '#4ade80'
   },
   journalLauncherBtnText: {
     color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 13
+    fontWeight: '800',
+    fontSize: 12.5
   }
 });
