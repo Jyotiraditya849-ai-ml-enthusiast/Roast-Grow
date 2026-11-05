@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Activit
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
+import { NotificationProvider } from './src_app/context/NotificationContext';
+import { CyberNotificationBanner } from './src_app/components/Common/CyberNotificationBanner';
+import { CyberAlertModal } from './src_app/components/Common/CyberAlertModal';
 import { AuthProvider, useAuth } from './src_app/context/AuthContext';
 import { StreakProvider, useStreak } from './src_app/context/StreakContext';
 import { Header } from './src_app/components/Common/Header';
@@ -137,9 +140,13 @@ export default function App() {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics} style={styles.safeArea}>
       <GlobalErrorBoundary>
-        <AuthProvider>
-          <RootRouter />
-        </AuthProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <RootRouter />
+          </AuthProvider>
+          <CyberNotificationBanner />
+          <CyberAlertModal />
+        </NotificationProvider>
       </GlobalErrorBoundary>
     </SafeAreaProvider>
   );

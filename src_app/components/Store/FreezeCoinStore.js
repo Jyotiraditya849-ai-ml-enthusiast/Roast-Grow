@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Platform
 } from 'react-native';
 import { FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useCyberNotification } from '../../context/NotificationContext';
 
 export const FreezeCoinStore = ({
   freezeCoins,
@@ -16,43 +16,53 @@ export const FreezeCoinStore = ({
   currentStreak
 }) => {
   const [isActivating, setIsActivating] = useState(false);
+  const { showCyberNotification, showCyberDialog } = useCyberNotification();
 
   const handleSpend = async () => {
     if (freezeCoins <= 0) {
-      Alert.alert(
-        'Out of Freeze Coins 🥶',
-        'You need at least 1 Freeze Coin to activate streak immunity. Keep your streak going to earn more!'
-      );
+      showCyberNotification({
+        type: 'warning',
+        title: 'Out of Freeze Coins 🥶',
+        message: 'You need at least 1 Freeze Coin to activate streak immunity. Keep your streak going to earn more!',
+        hudTag: '[VAULT // ZERO_BALANCE]'
+      });
       return;
     }
 
-    Alert.alert(
-      'Activate Freeze Shield? ❄️',
-      'Spending 1 Freeze Coin will safeguard your streak for today, ensuring your day counter is never reset to 0 even if you miss tasks.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Spend 1 Coin',
-          style: 'default',
-          onPress: async () => {
-            setIsActivating(true);
-            try {
-              if (Platform.OS !== 'web') {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              }
-              const res = await onActivateShield();
-              if (res.success) {
-                Alert.alert('Shield Activated! ❄️', 'Your streak is fully protected.');
-              } else {
-                Alert.alert('Notice', res.message || 'Could not activate shield.');
-              }
-            } finally {
-              setIsActivating(false);
-            }
+    showCyberDialog({
+      type: 'freeze',
+      title: 'Activate Freeze Shield? ❄️',
+      message: 'Spending 1 Freeze Coin will safeguard your streak for today, ensuring your day counter is never reset to 0 even if you miss tasks.',
+      confirmText: 'SPEND 1 COIN',
+      cancelText: 'ABORT',
+      hudTag: '[VAULT // SHIELD_ACTIVATION]',
+      onConfirm: async () => {
+        setIsActivating(true);
+        try {
+          if (Platform.OS !== 'web') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }
+          const res = await onActivateShield();
+          if (res.success) {
+            showCyberNotification({
+              type: 'freeze',
+              title: 'Shield Activated! ❄️',
+              message: 'Defense matrix online. Your day streak is fully protected for 24 hours.',
+              hudTag: '[DEFENSE // SHIELD_ONLINE]'
+            });
+          } else {
+            showCyberNotification({
+              type: 'warning',
+              title: 'Shield Activation Notice',
+              message: res.message || 'Could not activate shield.',
+              hudTag: '[DEFENSE // NOTICE]'
+            });
+          }
+        } finally {
+          setIsActivating(false);
         }
-      ]
-    );
+      }
+    });
   };
 
   return (

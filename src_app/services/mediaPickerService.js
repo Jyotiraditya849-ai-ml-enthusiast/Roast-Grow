@@ -1,6 +1,7 @@
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { showGlobalCyberNotification } from '../context/NotificationContext';
 
 /**
  * Service to handle picking full roadmap files (PDF, images, documents)
@@ -37,7 +38,12 @@ export const pickRoadmapFileOrPhoto = async () => {
       if (Platform.OS !== 'web') {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission Required', 'Permission is required to choose files or photos.');
+          showGlobalCyberNotification({
+            type: 'warning',
+            title: 'Permission Required 📷',
+            message: 'Permission is required to choose files or photos.',
+            hudTag: '[MEDIA // PERMISSION_REQUIRED]'
+          });
           return null;
         }
       }
@@ -58,7 +64,12 @@ export const pickRoadmapFileOrPhoto = async () => {
         };
       }
     } catch (e) {
-      Alert.alert('Error', 'Unable to pick file or photo.');
+      showGlobalCyberNotification({
+        type: 'error',
+        title: 'File Picker Error',
+        message: 'Unable to pick file or photo.',
+        hudTag: '[MEDIA // ERROR]'
+      });
     }
     return null;
   }
@@ -69,7 +80,12 @@ export const takeRoadmapPhoto = async () => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Camera permission is required.');
+        showGlobalCyberNotification({
+          type: 'warning',
+          title: 'Permission Required 📷',
+          message: 'Camera permission is required.',
+          hudTag: '[CAMERA // PERMISSION_REQUIRED]'
+        });
         return null;
       }
     }
@@ -92,7 +108,12 @@ export const takeRoadmapPhoto = async () => {
     return null;
   } catch (error) {
     console.warn('takeRoadmapPhoto error:', error);
-    Alert.alert('Error', 'Unable to access camera.');
+    showGlobalCyberNotification({
+      type: 'error',
+      title: 'Camera Error',
+      message: 'Unable to access camera.',
+      hudTag: '[CAMERA // ERROR]'
+    });
     return null;
   }
 };

@@ -7,7 +7,7 @@ const REMINDER_CHANNEL_ID = 'roast-grow-reminders';
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowAlert: false, // In-app, our Cyberpunk HUD Banner renders notifications cleanly
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),

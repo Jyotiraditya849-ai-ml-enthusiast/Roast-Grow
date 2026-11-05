@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   Modal
 } from 'react-native';
@@ -14,11 +13,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS, saveFreezeCoins, getFreezeCoins } from '../storage/asyncStorage';
 import { useStreak } from '../context/StreakContext';
 import { useAuth } from '../context/AuthContext';
+import { useCyberNotification } from '../context/NotificationContext';
 import { FreezeCoinStore } from '../components/Store/FreezeCoinStore';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 export const SettingsScreen = () => {
+  const { showCyberNotification, showCyberDialog } = useCyberNotification();
   const {
     challenge,
     freezeCoins,
@@ -62,12 +63,14 @@ export const SettingsScreen = () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       setPinModalVisible(false);
-      Alert.alert(
-        'Security PIN Updated! 🔒',
-        newPinInput.trim()
+      showCyberNotification({
+        type: 'success',
+        title: 'Security PIN Updated! 🔒',
+        message: newPinInput.trim()
           ? 'Your new Security PIN is now active on this account.'
-          : 'Security PIN has been removed. You can now log in without a PIN.'
-      );
+          : 'Security PIN has been removed. You can now log in without a PIN.',
+        hudTag: '[SECURITY // PIN_UPDATED]'
+      });
     } catch (err) {
       setPinError(err.message || 'Failed to update PIN.');
     } finally {
@@ -91,9 +94,19 @@ export const SettingsScreen = () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       setTimeout(() => setIsSaved(false), 3000);
-      Alert.alert('Key Saved', 'LLM API key updated successfully.');
+      showCyberNotification({
+        type: 'success',
+        title: 'API Key Saved 🔑',
+        message: 'LLM API key updated successfully in secure vault storage.',
+        hudTag: '[VAULT // KEY_STORED]'
+      });
     } catch (e) {
-      Alert.alert('Error', 'Failed to save API key.');
+      showCyberNotification({
+        type: 'error',
+        title: 'Storage Error ⚠️',
+        message: 'Failed to save API key.',
+        hudTag: '[SYSTEM // ERROR]'
+      });
     }
   };
 
@@ -105,46 +118,59 @@ export const SettingsScreen = () => {
       await logout();
     };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm(`Log out of @${currentUser?.username}?`)) {
-        doLogout();
-      }
-    } else {
-      Alert.alert('Log Out', `Log out of @${currentUser?.username}?`, [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log Out', style: 'destructive', onPress: doLogout }
-      ]);
-    }
+    showCyberDialog({
+      type: 'warning',
+      title: 'Log Out Challenger?',
+      message: `Log out of @${currentUser?.username}? Your streak progress remains safe locally.`,
+      confirmText: 'LOG OUT',
+      cancelText: 'ABORT',
+      isDestructive: true,
+      hudTag: '[AUTH // LOGOUT_GATE]',
+      onConfirm: doLogout
+    });
   };
 
   const handleSimulateMissedDay = () => {
-    Alert.alert(
-      'Simulate Missed Day? ⚠️',
-      'This shifts your last active date 3 days into the past. It will trigger the strict calendar check: either auto-consuming a Freeze Coin if available, or resetting your streak to 0 and triggering AI Roast Mode!',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Trigger Simulation',
-          style: 'destructive',
-          onPress: async () => {
-            await simulateMissedDay();
-            Alert.alert('Simulation Executed', 'Check the Dashboard for the updated streak and AI reaction!');
-          }
-        }
-      ]
-    );
+    showCyberDialog({
+      type: 'warning',
+      title: 'Simulate Missed Day? ⚠️',
+      message: 'This shifts your last active date 3 days into the past. It triggers calendar validation: auto-consuming a Freeze Coin if available, or resetting your streak to 0 and triggering AI Roast Mode!',
+      confirmText: 'TRIGGER SIMULATION',
+      cancelText: 'ABORT',
+      isDestructive: true,
+      hudTag: '[SIMULATION // PROTOCOL]',
+      onConfirm: async () => {
+        await simulateMissedDay();
+        showCyberNotification({
+          type: 'warning',
+          title: 'Simulation Executed ⚡',
+          message: 'Check Dashboard for the updated streak and AI reaction!',
+          hudTag: '[SIMULATION // COMPLETE]'
+        });
+      }
+    });
   };
 
   const handleAddTestCoin = async () => {
     const current = await getFreezeCoins();
     await saveFreezeCoins(current + 1);
     await initApp();
-    Alert.alert('Coin Added 🪙', 'Added 1 test Freeze Coin to your vault.');
+    showCyberNotification({
+      type: 'coin',
+      title: 'Coin Added 🪙',
+      message: 'Added 1 test Freeze Coin to your vault.',
+      hudTag: '[VAULT // TEST_CREDIT]'
+    });
   };
 
   const handleTestNotification = async () => {
     if (Platform.OS === 'web') {
-      Alert.alert('Web Preview', 'Notifications run natively on Android & iOS mobile devices.');
+      showCyberNotification({
+        type: 'info',
+        title: 'Web Preview Mode 🌐',
+        message: 'Notifications run natively on Android & iOS mobile devices.',
+        hudTag: '[SYSTEM // PLATFORM_INFO]'
+      });
       return;
     }
     const sent = await sendInstantTestNotification();
@@ -152,9 +178,19 @@ export const SettingsScreen = () => {
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      Alert.alert('Notification Triggered 🔔', 'Check your mobile notification bar in 2 seconds!');
+      showCyberNotification({
+        type: 'push',
+        title: 'Notification Triggered 🔔',
+        message: 'Dispatched instant reminder! Notification received in-app & device tray.',
+        hudTag: '[COMMS // ALERT_DISPATCHED]'
+      });
     } else {
-      Alert.alert('Permission Denied', 'Please enable notifications for Roast & Grow in your device settings.');
+      showCyberNotification({
+        type: 'warning',
+        title: 'Permission Denied 🚫',
+        message: 'Please enable notifications for Roast & Grow in device settings.',
+        hudTag: '[PERMISSIONS // DENIED]'
+      });
     }
   };
 
@@ -391,10 +427,24 @@ export const SettingsScreen = () => {
           <TouchableOpacity
             style={styles.testBtn}
             onPress={() => {
-              Alert.alert('Reset to 0?', 'Are you sure you want to manually reset the streak?', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Reset', style: 'destructive', onPress: resetStreak }
-              ]);
+              showCyberDialog({
+                type: 'warning',
+                title: 'Reset Streak to 0? ⚠️',
+                message: 'Are you sure you want to manually reset your streak to 0? This cannot be undone.',
+                confirmText: 'RESET TO 0',
+                cancelText: 'ABORT',
+                isDestructive: true,
+                hudTag: '[MANUAL_OVERRIDE // RESET]',
+                onConfirm: async () => {
+                  await resetStreak();
+                  showCyberNotification({
+                    type: 'warning',
+                    title: 'Streak Reset to 0',
+                    message: 'Challenger counter set to 0. Time to rebuild!',
+                    hudTag: '[REBOOT // STREAK_RESET]'
+                  });
+                }
+              });
             }}
             activeOpacity={0.8}
           >

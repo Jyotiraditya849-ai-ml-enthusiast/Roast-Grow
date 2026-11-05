@@ -12,11 +12,13 @@ import {
   Modal
 } from 'react-native';
 import { useAuth, AVATAR_OPTIONS } from '../context/AuthContext';
+import { useCyberNotification } from '../context/NotificationContext';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 export const AuthScreen = () => {
   const { login, register, resetPin, savedAccounts } = useAuth();
+  const { showCyberNotification } = useCyberNotification();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [username, setUsername] = useState('');
@@ -80,12 +82,14 @@ export const AuthScreen = () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       setForgotModalVisible(false);
-      Alert.alert(
-        'PIN Reset Successful! 🔓',
-        forgotNewPin.trim()
+      showCyberNotification({
+        type: 'success',
+        title: 'PIN Reset Successful! 🔓',
+        message: forgotNewPin.trim()
           ? `Your new PIN has been saved. Welcome back, ${matchedAccount.displayName}!`
-          : `PIN protection removed. Welcome back, ${matchedAccount.displayName}!`
-      );
+          : `PIN protection removed. Welcome back, ${matchedAccount.displayName}!`,
+        hudTag: '[SECURITY // PIN_RESTORED]'
+      });
     } catch (err) {
       setForgotError(err.message || 'Failed to reset PIN.');
     } finally {

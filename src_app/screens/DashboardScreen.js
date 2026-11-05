@@ -20,8 +20,10 @@ import { JournalModal } from '../components/Journal/JournalModal';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { getLocalDateString } from '../storage/asyncStorage';
+import { useCyberNotification } from '../context/NotificationContext';
 
 export const DashboardScreen = ({ onNavigateToVault }) => {
+  const { showCyberNotification } = useCyberNotification();
   const {
     challenge,
     habits,
@@ -70,10 +72,12 @@ export const DashboardScreen = ({ onNavigateToVault }) => {
 
   const handleCheckIn = async () => {
     if (isAlreadyCheckedIn) {
-      Alert.alert(
-        "Today's Streak Secured! 🔥",
-        `You have already checked in for today (Day ${challenge.currentStreak}). Keep the momentum going tomorrow!`
-      );
+      showCyberNotification({
+        type: 'streak',
+        title: "Today's Streak Secured! 🔥",
+        message: `You have already checked in for today (Day ${challenge.currentStreak}). Keep the discipline going tomorrow!`,
+        hudTag: '[PROTOCOL // STREAK_ACTIVE]'
+      });
       return;
     }
 
@@ -82,27 +86,28 @@ export const DashboardScreen = ({ onNavigateToVault }) => {
       if (!isDailyGoalCompleted) {
         missingParts.push(
           hasDailyGoalText
-            ? "❌ Today's Supreme Mission is not checked off yet."
-            : "❌ Please define and complete today's Supreme Mission."
+            ? "• Supreme Mission: Pending"
+            : "• Supreme Mission: Not Set"
         );
       } else {
-        missingParts.push("✓ Today's Supreme Mission completed.");
+        missingParts.push("• Supreme Mission: ✓ Completed");
       }
 
       if (completedHabitsCount < 3) {
         missingParts.push(
-          `❌ Need at least 3 Micro-Habits completed (${completedHabitsCount}/3 currently done).`
+          `• Micro-Habits: ${completedHabitsCount}/3 completed (Min 3 required)`
         );
       } else {
-        missingParts.push(`✓ Micro-Habits threshold met (${completedHabitsCount}/3).`);
+        missingParts.push(`• Micro-Habits: ✓ Fulfillled (${completedHabitsCount}/3)`);
       }
 
-      Alert.alert(
-        'Streak Check-In Locked 🔒',
-        `Strict Rule: Today's streak will not count unless BOTH criteria are fulfilled:\n\n${missingParts.join(
-          '\n'
-        )}\n\nOnce both are checked off, today's streak will lock in automatically with celebration!`
-      );
+      showCyberNotification({
+        type: 'warning',
+        title: 'Check-In Locked 🔒',
+        message: `Strict Criteria:\n${missingParts.join('\n')}`,
+        duration: 5000,
+        hudTag: '[STRICT_RULE // CRITERIA_UNMET]'
+      });
       return;
     }
 
@@ -113,7 +118,12 @@ export const DashboardScreen = ({ onNavigateToVault }) => {
       }
       await checkIn({ showAnimation: true });
     } catch (err) {
-      Alert.alert('Error', 'Failed to perform daily check-in.');
+      showCyberNotification({
+        type: 'error',
+        title: 'Check-In Error ⚠️',
+        message: 'Failed to perform daily check-in. Please try again.',
+        hudTag: '[SYSTEM // ERROR]'
+      });
     } finally {
       setIsCheckingIn(false);
     }
