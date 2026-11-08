@@ -24,7 +24,9 @@ export const STORAGE_KEYS = {
   JOURNAL: '@streak_journal_logs',
   FREEZE_COINS: '@streak_freeze_coins',
   LAST_EVALUATED_DATE: '@streak_last_eval_date',
-  API_KEY: '@streak_custom_api_key'
+  API_KEY: '@streak_custom_api_key',
+  HABIT_GRIDS_EXPANDED: '@streak_habit_grids_expanded',
+  REMINDERS_EXPANDED: '@streak_reminders_expanded'
 };
 
 // Date format helper: YYYY-MM-DD in local time

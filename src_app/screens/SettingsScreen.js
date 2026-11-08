@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,13 @@ import {
   Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS, saveFreezeCoins, getFreezeCoins } from '../storage/asyncStorage';
+import {
+  STORAGE_KEYS,
+  saveFreezeCoins,
+  getFreezeCoins,
+  getRemindersExpandedPreference,
+  saveRemindersExpandedPreference
+} from '../storage/asyncStorage';
 import { useStreak } from '../context/StreakContext';
 import { useAuth } from '../context/AuthContext';
 import { useCyberNotification } from '../context/NotificationContext';
@@ -35,6 +41,36 @@ export const SettingsScreen = React.memo(() => {
 
   const [apiKey, setApiKey] = useState('');
   const [isSaved, setIsSaved] = useState(false);
+  const [isRemindersExpanded, setIsRemindersExpanded] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadRemindersState = async () => {
+      try {
+        const saved = await getRemindersExpandedPreference();
+        if (isMounted && typeof saved === 'boolean') {
+          setIsRemindersExpanded(saved);
+        }
+      } catch (e) {
+        // Fallback default: collapsed (false)
+      }
+    };
+    loadRemindersState();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const toggleReminders = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setIsRemindersExpanded((prev) => {
+      const nextState = !prev;
+      saveRemindersExpandedPreference(nextState);
+      return nextState;
+    });
+  }, []);
 
   // In-app PIN management state
   const [pinModalVisible, setPinModalVisible] = useState(false);
@@ -299,101 +335,122 @@ export const SettingsScreen = React.memo(() => {
           </TouchableOpacity>
         </View>
 
-        {/* Smart Notifications & Reminders */}
-        <View style={styles.sectionCard}>
-          <View style={styles.notifHeaderRow}>
-            <Ionicons name="notifications" size={20} color="#f97316" />
-            <Text style={styles.sectionTitle}>Smart Reminders & Alerts</Text>
-          </View>
-          <Text style={styles.sectionSubtitle}>
-            Automated daily reminders (3x a day) and Supreme Goal countdown alerts.
-          </Text>
-
-          {/* 3 Daily Reminders */}
-          <View style={styles.notifGroup}>
-            <Text style={styles.notifGroupTitle}>📅 DAILY STREAK REMINDERS (3X)</Text>
-            
-            <View style={styles.notifItem}>
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>09:00 AM</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>🌅 Morning Kickoff</Text>
-                <Text style={styles.notifDesc}>Set & start today's Supreme Mission and Micro-Habits.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-
-            <View style={styles.notifItem}>
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>02:30 PM</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>⚡ Midday Momentum Check</Text>
-                <Text style={styles.notifDesc}>Keep the discipline going before evening sets in.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-
-            <View style={styles.notifItem}>
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>08:30 PM</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>🚨 Final Streak Warning</Text>
-                <Text style={styles.notifDesc}>Midnight deadline warning to protect your day streak.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-          </View>
-
-          {/* Supreme Goal Deadline Alerts */}
-          <View style={styles.notifGroup}>
-            <Text style={styles.notifGroupTitle}>🎯 SUPREME GOAL DEADLINE ALERTS</Text>
-
-            <View style={styles.notifItem}>
-              <View style={[styles.notifBadge, styles.notifBadgeGold]}>
-                <Text style={[styles.notifBadgeText, styles.notifBadgeGoldText]}>30 Days</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>⏳ 1 Month Warning</Text>
-                <Text style={styles.notifDesc}>Review roadmap milestones 1 month before deadline.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-
-            <View style={styles.notifItem}>
-              <View style={[styles.notifBadge, styles.notifBadgeOrange]}>
-                <Text style={[styles.notifBadgeText, styles.notifBadgeOrangeText]}>7 Days</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>🚨 1 Week Alert</Text>
-                <Text style={styles.notifDesc}>Final 7-day push alert before goal target date.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-
-            <View style={styles.notifItem}>
-              <View style={[styles.notifBadge, styles.notifBadgeRed]}>
-                <Text style={[styles.notifBadgeText, styles.notifBadgeRedText]}>Final Day</Text>
-              </View>
-              <View style={styles.notifDetails}>
-                <Text style={styles.notifName}>🔥 Deadline Day</Text>
-                <Text style={styles.notifDesc}>Ultimate victory day call-to-action at 9:00 AM.</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            </View>
-          </View>
-
-          {/* Test Notification Button */}
+        {/* Smart Notifications & Reminders (Collapsible) */}
+        <View style={styles.remindersSectionCard}>
           <TouchableOpacity
-            style={styles.testNotificationBtn}
-            onPress={handleTestNotification}
-            activeOpacity={0.8}
+            style={styles.remindersHeaderRow}
+            onPress={toggleReminders}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isRemindersExpanded }}
+            accessibilityLabel="Smart Reminders & Alerts, 3 daily reminders on"
           >
-            <Ionicons name="paper-plane" size={16} color="#ffffff" />
-            <Text style={styles.testNotificationBtnText}>Send Test Notification (Now)</Text>
+            <View style={styles.remindersHeaderContent}>
+              <View style={styles.remindersTitleRow}>
+                <Ionicons name="notifications" size={18} color="#f97316" />
+                <Text style={styles.remindersTitleText}>Smart Reminders & Alerts</Text>
+                <View style={styles.remindersStatusBadge}>
+                  <View style={styles.remindersStatusDot} />
+                  <Text style={styles.remindersStatusText}>3 daily reminders on</Text>
+                </View>
+              </View>
+              <Text style={styles.remindersArrow}>{isRemindersExpanded ? '▲' : '▼'}</Text>
+            </View>
           </TouchableOpacity>
+
+          {isRemindersExpanded && (
+            <View style={styles.remindersExpandedContent}>
+              <Text style={styles.sectionSubtitle}>
+                Automated daily reminders (3x a day) and Supreme Goal countdown alerts.
+              </Text>
+
+              {/* 3 Daily Reminders */}
+              <View style={styles.notifGroup}>
+                <Text style={styles.notifGroupTitle}>📅 DAILY STREAK REMINDERS (3X)</Text>
+                
+                <View style={styles.notifItem}>
+                  <View style={styles.notifBadge}>
+                    <Text style={styles.notifBadgeText}>09:00 AM</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>🌅 Morning Kickoff</Text>
+                    <Text style={styles.notifDesc}>Set & start today's Supreme Mission and Micro-Habits.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+
+                <View style={styles.notifItem}>
+                  <View style={styles.notifBadge}>
+                    <Text style={styles.notifBadgeText}>02:30 PM</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>⚡ Midday Momentum Check</Text>
+                    <Text style={styles.notifDesc}>Keep the discipline going before evening sets in.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+
+                <View style={styles.notifItem}>
+                  <View style={styles.notifBadge}>
+                    <Text style={styles.notifBadgeText}>08:30 PM</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>🚨 Final Streak Warning</Text>
+                    <Text style={styles.notifDesc}>Midnight deadline warning to protect your day streak.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+              </View>
+
+              {/* Supreme Goal Deadline Alerts */}
+              <View style={styles.notifGroup}>
+                <Text style={styles.notifGroupTitle}>🎯 SUPREME GOAL DEADLINE ALERTS</Text>
+
+                <View style={styles.notifItem}>
+                  <View style={[styles.notifBadge, styles.notifBadgeGold]}>
+                    <Text style={[styles.notifBadgeText, styles.notifBadgeGoldText]}>30 Days</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>⏳ 1 Month Warning</Text>
+                    <Text style={styles.notifDesc}>Review roadmap milestones 1 month before deadline.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+
+                <View style={styles.notifItem}>
+                  <View style={[styles.notifBadge, styles.notifBadgeOrange]}>
+                    <Text style={[styles.notifBadgeText, styles.notifBadgeOrangeText]}>7 Days</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>🚨 1 Week Alert</Text>
+                    <Text style={styles.notifDesc}>Final 7-day push alert before goal target date.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+
+                <View style={styles.notifItem}>
+                  <View style={[styles.notifBadge, styles.notifBadgeRed]}>
+                    <Text style={[styles.notifBadgeText, styles.notifBadgeRedText]}>Final Day</Text>
+                  </View>
+                  <View style={styles.notifDetails}>
+                    <Text style={styles.notifName}>🔥 Deadline Day</Text>
+                    <Text style={styles.notifDesc}>Ultimate victory day call-to-action at 9:00 AM.</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                </View>
+              </View>
+
+              {/* Test Notification Button */}
+              <TouchableOpacity
+                style={styles.testNotificationBtn}
+                onPress={handleTestNotification}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="paper-plane" size={16} color="#ffffff" />
+                <Text style={styles.testNotificationBtnText}>Send Test Notification (Now)</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Developer / Testing Sandbox */}
@@ -694,6 +751,72 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 13,
     fontWeight: '700'
+  },
+  remindersSectionCard: {
+    backgroundColor: '#111620',
+    borderRadius: 20,
+    marginHorizontal: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#1e2636',
+    overflow: 'hidden'
+  },
+  remindersHeaderRow: {
+    minHeight: 48,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    justifyContent: 'center'
+  },
+  remindersHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8
+  },
+  remindersTitleRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  remindersTitleText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#f8fafc',
+    letterSpacing: 0.2
+  },
+  remindersStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    gap: 5
+  },
+  remindersStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22c55e'
+  },
+  remindersStatusText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#4ade80'
+  },
+  remindersArrow: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#f97316',
+    marginLeft: 6
+  },
+  remindersExpandedContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16
   },
   notifHeaderRow: {
     flexDirection: 'row',

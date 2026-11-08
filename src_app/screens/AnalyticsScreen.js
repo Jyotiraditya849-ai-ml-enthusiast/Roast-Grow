@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useStreak } from '../context/StreakContext';
 import { ActivityHeatmap } from '../components/Analytics/ActivityHeatmap';
 import { WeeklyFocusTimerGraph } from '../components/Analytics/WeeklyFocusTimerGraph';
 import { HabitHeatmapGrid } from '../components/Analytics/HabitHeatmapGrid';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { getLocalDateString } from '../storage/asyncStorage';
+import { getLocalDateString, getHabitGridsExpandedPreference, saveHabitGridsExpandedPreference } from '../storage/asyncStorage';
 import { THEME } from '../theme';
 
 export const AnalyticsScreen = React.memo(() => {
   const { challenge, history, habits = [], freezeCoins } = useStreak();
   const [heatmapMode, setHeatmapMode] = useState('forward');
+  const [isHabitGridsExpanded, setIsHabitGridsExpanded] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadExpandedState = async () => {
+      try {
+        const saved = await getHabitGridsExpandedPreference();
+        if (isMounted && typeof saved === 'boolean') {
+          setIsHabitGridsExpanded(saved);
+        }
+      } catch (e) {
+        // Fallback to collapsed by default
+      }
+    };
+    loadExpandedState();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const toggleHabitGrids = useCallback(() => {
+    setIsHabitGridsExpanded((prev) => {
+      const nextState = !prev;
+      saveHabitGridsExpandedPreference(nextState);
+      return nextState;
+    });
+  }, []);
 
   const todayStr = getLocalDateString();
   const totalActiveDays =
@@ -87,86 +114,101 @@ export const AnalyticsScreen = React.memo(() => {
         {/* 2. Weekly Focus Timer Graph Analysis (Between Main Grid & 4 Habits) */}
         <WeeklyFocusTimerGraph />
 
-        {/* 3. Four Dedicated 365-Day Core Habit Grids */}
-        <View style={styles.sectionHeaderRow}>
-          <View style={styles.sectionHeaderLeft}>
-            <View style={styles.hudBadge}>
-              <View style={styles.hudDot} />
-              <Text style={styles.hudBadgeText}>CORE PILLARS // 365-DAY BREAKDOWN</Text>
+        {/* 3. Four Dedicated 365-Day Core Habit Grids (Collapsible) */}
+        <TouchableOpacity
+          style={styles.collapsibleSectionHeader}
+          onPress={toggleHabitGrids}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: isHabitGridsExpanded }}
+          accessibilityLabel="4 Non-Negotiable Habit Grids, tap to expand or collapse"
+        >
+          <Text style={styles.sectionHeading}>4 Non-Negotiable Habit Grids</Text>
+          <Text style={styles.sectionArrowIcon}>{isHabitGridsExpanded ? '▲' : '▼'}</Text>
+        </TouchableOpacity>
+
+        {isHabitGridsExpanded && (
+          <View style={styles.expandedHabitsContainer}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionHeaderLeft}>
+                <View style={styles.hudBadge}>
+                  <View style={styles.hudDot} />
+                  <Text style={styles.hudBadgeText}>CORE PILLARS // 365-DAY BREAKDOWN</Text>
+                </View>
+                <Text style={styles.sectionSub}>
+                  Dedicated 365-day matrices for each mandatory foundational habit.
+                </Text>
+              </View>
+
+              {/* Mode Switcher Buttons */}
+              <View style={styles.modeToggleRow}>
+                <TouchableOpacity
+                  style={[styles.modeToggleBtn, heatmapMode === 'forward' && styles.modeToggleBtnActive]}
+                  onPress={() => setHeatmapMode('forward')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.modeToggleText, heatmapMode === 'forward' && styles.modeToggleTextActive]}>
+                    🚀 Roadmap
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modeToggleBtn, heatmapMode === 'retrospective' && styles.modeToggleBtnActive]}
+                  onPress={() => setHeatmapMode('retrospective')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.modeToggleText, heatmapMode === 'retrospective' && styles.modeToggleTextActive]}>
+                    ⏪ Past 365d
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Text style={styles.sectionHeading}>4 Non-Negotiable Habit Grids</Text>
-            <Text style={styles.sectionSub}>
-              Dedicated 365-day matrices for each mandatory foundational habit.
-            </Text>
+
+            <HabitHeatmapGrid
+              habitId="core_exercise"
+              title="Daily 1hr Exercise 🏋️"
+              icon="barbell-outline"
+              accentColor={THEME.crimson}
+              history={history}
+              isTodayDone={isExerciseDone}
+              startDate={challenge?.startDate}
+              viewMode={heatmapMode}
+            />
+
+            <HabitHeatmapGrid
+              habitId="core_water"
+              title="Daily Drink 4L Water 💧"
+              icon="water-outline"
+              accentColor={THEME.blueLight}
+              history={history}
+              isTodayDone={isWaterDone}
+              startDate={challenge?.startDate}
+              viewMode={heatmapMode}
+            />
+
+            <HabitHeatmapGrid
+              habitId="core_reading"
+              title="Read at least 10 Pages of Book 📖"
+              icon="book-outline"
+              accentColor={THEME.marigold}
+              history={history}
+              isTodayDone={isReadingDone}
+              startDate={challenge?.startDate}
+              viewMode={heatmapMode}
+            />
+
+            <HabitHeatmapGrid
+              habitId="core_sleep"
+              title="Wake Up & Sleep at Fixed Time ⏰"
+              icon="alarm-outline"
+              accentColor="#c084fc"
+              history={history}
+              isTodayDone={isSleepDone}
+              startDate={challenge?.startDate}
+              viewMode={heatmapMode}
+            />
           </View>
-
-          {/* Mode Switcher Buttons */}
-          <View style={styles.modeToggleRow}>
-            <TouchableOpacity
-              style={[styles.modeToggleBtn, heatmapMode === 'forward' && styles.modeToggleBtnActive]}
-              onPress={() => setHeatmapMode('forward')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.modeToggleText, heatmapMode === 'forward' && styles.modeToggleTextActive]}>
-                🚀 Roadmap
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modeToggleBtn, heatmapMode === 'retrospective' && styles.modeToggleBtnActive]}
-              onPress={() => setHeatmapMode('retrospective')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.modeToggleText, heatmapMode === 'retrospective' && styles.modeToggleTextActive]}>
-                ⏪ Past 365d
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <HabitHeatmapGrid
-          habitId="core_exercise"
-          title="Daily 1hr Exercise 🏋️"
-          icon="barbell-outline"
-          accentColor={THEME.crimson}
-          history={history}
-          isTodayDone={isExerciseDone}
-          startDate={challenge?.startDate}
-          viewMode={heatmapMode}
-        />
-
-        <HabitHeatmapGrid
-          habitId="core_water"
-          title="Daily Drink 4L Water 💧"
-          icon="water-outline"
-          accentColor={THEME.blueLight}
-          history={history}
-          isTodayDone={isWaterDone}
-          startDate={challenge?.startDate}
-          viewMode={heatmapMode}
-        />
-
-        <HabitHeatmapGrid
-          habitId="core_reading"
-          title="Read at least 10 Pages of Book 📖"
-          icon="book-outline"
-          accentColor={THEME.marigold}
-          history={history}
-          isTodayDone={isReadingDone}
-          startDate={challenge?.startDate}
-          viewMode={heatmapMode}
-        />
-
-        <HabitHeatmapGrid
-          habitId="core_sleep"
-          title="Wake Up & Sleep at Fixed Time ⏰"
-          icon="alarm-outline"
-          accentColor="#c084fc"
-          history={history}
-          isTodayDone={isSleepDone}
-          startDate={challenge?.startDate}
-          viewMode={heatmapMode}
-        />
+        )}
 
         {/* Performance Insights */}
         <View style={styles.insightsCard}>
@@ -317,9 +359,37 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800'
   },
+  collapsibleSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 12,
+    marginTop: 14,
+    marginBottom: 6,
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1.2,
+    borderColor: THEME.borderMedium,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  sectionArrowIcon: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: THEME.marigoldLight,
+    marginLeft: 8
+  },
+  expandedHabitsContainer: {
+    width: '100%'
+  },
   sectionHeaderRow: {
     marginHorizontal: 16,
-    marginTop: 18,
+    marginTop: 6,
     marginBottom: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -381,7 +451,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     color: THEME.textWhite,
-    letterSpacing: 0.3
+    letterSpacing: 0.3,
+    flex: 1
   },
   sectionSub: {
     fontSize: 11,
