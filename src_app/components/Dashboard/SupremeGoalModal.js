@@ -23,7 +23,8 @@ export const SupremeGoalModal = ({
   onUpdateDetails,
   onToggleMilestone,
   onAddMilestone,
-  onDeleteMilestone
+  onDeleteMilestone,
+  onSetFinalMilestone
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -228,36 +229,66 @@ export const SupremeGoalModal = ({
               )}
 
               {/* Existing Milestones List */}
-              {(supremeGoal?.roadmap || []).map((milestone) => (
-                <View key={milestone.id} style={styles.milestoneRow}>
-                  <TouchableOpacity
-                    style={styles.milestoneCheck}
-                    onPress={() => onToggleMilestone(milestone.id)}
+              {(supremeGoal?.roadmap || []).map((milestone, idx) => {
+                const phaseNum = milestone.phaseNumber || idx + 1;
+                const isFinal = Boolean(milestone.isFinal);
+                return (
+                  <View
+                    key={milestone.id}
+                    style={[styles.milestoneRow, isFinal && styles.milestoneRowFinal]}
                   >
-                    <Ionicons
-                      name={milestone.completed ? 'checkbox' : 'square-outline'}
-                      size={20}
-                      color={milestone.completed ? '#22c55e' : '#8b949e'}
-                    />
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.milestoneCheck}
+                      onPress={() => onToggleMilestone(milestone.id)}
+                    >
+                      <Ionicons
+                        name={milestone.completed ? 'checkbox' : 'square-outline'}
+                        size={20}
+                        color={milestone.completed ? '#22c55e' : '#8b949e'}
+                      />
+                    </TouchableOpacity>
 
-                  <Text
-                    style={[
-                      styles.milestoneTitle,
-                      milestone.completed && styles.milestoneDoneText
-                    ]}
-                  >
-                    {milestone.title}
-                  </Text>
+                    <View style={styles.milestoneContent}>
+                      <View style={styles.phaseTagRow}>
+                        <Text style={[styles.phaseTagText, isFinal && styles.phaseTagFinalText]}>
+                          {isFinal ? `🏆 Phase ${phaseNum} (Supreme Target)` : `Phase ${phaseNum}`}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[
+                          styles.milestoneTitle,
+                          milestone.completed && styles.milestoneDoneText,
+                          isFinal && styles.milestoneTitleFinal
+                        ]}
+                      >
+                        {milestone.title}
+                      </Text>
+                    </View>
 
-                  <TouchableOpacity
-                    style={styles.deleteMilestoneBtn}
-                    onPress={() => onDeleteMilestone(milestone.id)}
-                  >
-                    <Feather name="trash-2" size={16} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-              ))}
+                    {/* Final Milestone Crown/Trophy Selector */}
+                    {onSetFinalMilestone && (
+                      <TouchableOpacity
+                        style={[styles.finalSelectBtn, isFinal && styles.finalSelectBtnActive]}
+                        onPress={() => onSetFinalMilestone(milestone.id)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Ionicons
+                          name={isFinal ? 'trophy' : 'trophy-outline'}
+                          size={16}
+                          color={isFinal ? '#fbbf24' : '#6e7681'}
+                        />
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      style={styles.deleteMilestoneBtn}
+                      onPress={() => onDeleteMilestone(milestone.id)}
+                    >
+                      <Feather name="trash-2" size={16} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
 
               {/* Add Milestone Input */}
               <View style={styles.addMilestoneBox}>
@@ -471,20 +502,51 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: '#30363d',
+    gap: 8
+  },
+  milestoneRowFinal: {
+    borderColor: 'rgba(251, 191, 36, 0.6)',
+    backgroundColor: 'rgba(251, 191, 36, 0.08)'
   },
   milestoneCheck: {
-    marginRight: 10
+    marginRight: 4
+  },
+  milestoneContent: {
+    flex: 1
+  },
+  phaseTagRow: {
+    marginBottom: 2
+  },
+  phaseTagText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#8b949e',
+    letterSpacing: 0.3
+  },
+  phaseTagFinalText: {
+    color: '#fbbf24',
+    fontWeight: '900'
   },
   milestoneTitle: {
-    flex: 1,
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#f0f6fc',
-    fontWeight: '500'
+    fontWeight: '600'
+  },
+  milestoneTitleFinal: {
+    color: '#fef08a'
   },
   milestoneDoneText: {
     textDecorationLine: 'line-through',
     color: '#8b949e'
+  },
+  finalSelectBtn: {
+    padding: 6,
+    borderRadius: 6,
+    backgroundColor: '#0d1117'
+  },
+  finalSelectBtnActive: {
+    backgroundColor: 'rgba(251, 191, 36, 0.2)'
   },
   deleteMilestoneBtn: {
     padding: 4,

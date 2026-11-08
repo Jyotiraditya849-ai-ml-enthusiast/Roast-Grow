@@ -689,9 +689,9 @@ export const DEFAULT_SUPREME_GOAL = {
   attachmentUri: null,
   attachmentName: null,
   roadmap: [
-    { id: '1', title: 'Phase 1: React Native, Expo & Advanced UI Systems', completed: true },
-    { id: '2', title: 'Phase 2: Node.js, Distributed Backends & Databases', completed: false },
-    { id: '3', title: 'Phase 3: Launch Production Apps & Scale to 10k Users', completed: false }
+    { id: '1', phaseNumber: 1, phaseTitle: 'Phase 1', title: 'React Native, Expo & Advanced UI Systems', completed: true, isFinal: false },
+    { id: '2', phaseNumber: 2, phaseTitle: 'Phase 2', title: 'Node.js, Distributed Backends & Databases', completed: false, isFinal: false },
+    { id: '3', phaseNumber: 3, phaseTitle: 'Phase 3', title: 'Launch Production Apps & Scale to 10k Users', completed: false, isFinal: true }
   ],
   dailyGoal: {
     date: getLocalDateString(),
@@ -716,6 +716,17 @@ export const getSupremeGoal = async () => {
         fileName: null
       };
       await saveSupremeGoal(data);
+    }
+    // Normalize roadmap phases and isFinal attributes for backward compatibility
+    if (data.roadmap && Array.isArray(data.roadmap)) {
+      const hasFinal = data.roadmap.some((m) => m.isFinal);
+      data.roadmap = data.roadmap.map((m, idx) => ({
+        ...m,
+        phaseNumber: m.phaseNumber || (idx + 1),
+        phaseTitle: m.phaseTitle || `Phase ${m.phaseNumber || (idx + 1)}`,
+        title: m.title || `Phase ${idx + 1} Target`,
+        isFinal: hasFinal ? Boolean(m.isFinal) : (idx === data.roadmap.length - 1)
+      }));
     }
     return data;
   } catch (e) {
@@ -801,21 +812,61 @@ export const toggleSupremeMilestone = async (milestoneId) => {
   return goal;
 };
 
-export const addSupremeMilestone = async (title) => {
+export const updateSupremeMilestone = async (milestoneId, updates = {}) => {
   const goal = await getSupremeGoal();
+  goal.roadmap = (goal.roadmap || []).map((m) =>
+    m.id === milestoneId ? { ...m, ...updates } : m
+  );
+  await saveSupremeGoal(goal);
+  return goal;
+};
+
+export const setSupremeFinalMilestone = async (milestoneId) => {
+  const goal = await getSupremeGoal();
+  goal.roadmap = (goal.roadmap || []).map((m) => ({
+    ...m,
+    isFinal: m.id === milestoneId
+  }));
+  await saveSupremeGoal(goal);
+  return goal;
+};
+
+export const addSupremeMilestone = async (title, isFinal = false) => {
+  const goal = await getSupremeGoal();
+  const currentRoadmap = goal.roadmap || [];
+  const nextPhaseNumber = currentRoadmap.length + 1;
   const newMilestone = {
     id: Date.now().toString(),
-    title: (title || '').trim(),
-    completed: false
+    phaseNumber: nextPhaseNumber,
+    phaseTitle: `Phase ${nextPhaseNumber}`,
+    title: (title || `Phase ${nextPhaseNumber}: Mastery Target`).trim(),
+    completed: false,
+    isFinal: Boolean(isFinal)
   };
-  goal.roadmap = [...(goal.roadmap || []), newMilestone];
+  let updatedRoadmap = [...currentRoadmap];
+  if (isFinal) {
+    updatedRoadmap = updatedRoadmap.map((m) => ({ ...m, isFinal: false }));
+  }
+  updatedRoadmap.push(newMilestone);
+  goal.roadmap = updatedRoadmap;
   await saveSupremeGoal(goal);
   return goal;
 };
 
 export const deleteSupremeMilestone = async (milestoneId) => {
   const goal = await getSupremeGoal();
-  goal.roadmap = (goal.roadmap || []).filter((m) => m.id !== milestoneId);
+  let remaining = (goal.roadmap || []).filter((m) => m.id !== milestoneId);
+  // Re-index phase numbers
+  remaining = remaining.map((m, idx) => ({
+    ...m,
+    phaseNumber: idx + 1,
+    phaseTitle: `Phase ${idx + 1}`
+  }));
+  // If the removed one was isFinal and remaining has elements, make the last one final
+  if (remaining.length > 0 && !remaining.some((m) => m.isFinal)) {
+    remaining[remaining.length - 1].isFinal = true;
+  }
+  goal.roadmap = remaining;
   await saveSupremeGoal(goal);
   return goal;
 };

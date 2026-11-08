@@ -14,6 +14,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { getDayDifference, getLocalDateString } from '../../storage/asyncStorage';
 import { pickRoadmapFileOrPhoto } from '../../services/mediaPickerService';
+import { MilestoneRoadmapTree } from './MilestoneRoadmapTree';
 
 export const SupremeGoalCard = ({
   supremeGoal,
@@ -23,11 +24,15 @@ export const SupremeGoalCard = ({
   onToggleDailyGoal,
   onOpenSettings,
   onToggleMilestone,
+  onUpdateMilestone,
+  onSetFinalMilestone,
+  onAddMilestone,
+  onDeleteMilestone,
   onUpdateDetails
 }) => {
   const [dailyGoalInput, setDailyGoalInput] = useState('');
   const [isEditingDaily, setIsEditingDaily] = useState(false);
-  const [showRoadmapList, setShowRoadmapList] = useState(false);
+  const [showRoadmapList, setShowRoadmapList] = useState(true);
 
   // Full-screen image viewer modal state
   const [previewImageUri, setPreviewImageUri] = useState(null);
@@ -165,24 +170,28 @@ export const SupremeGoalCard = ({
         ) : null}
       </View>
 
-      {/* ROADMAP SECTION WITH + FILE/PHOTO UPLOAD OPTION */}
+      {/* ROADMAP SECTION WITH PHASE-WISE TREE (Cyberpunk AMOLED Redesign) */}
       <View style={styles.roadmapCard}>
         <View style={styles.roadmapHeader}>
-          {/* Left: Milestones Title & Count */}
+          {/* Left: Milestones Title & Phase Counter */}
           <TouchableOpacity
             style={styles.roadmapHeaderLeft}
             onPress={() => setShowRoadmapList(!showRoadmapList)}
             activeOpacity={0.8}
           >
-            <Ionicons name="git-network-outline" size={15} color="#eab308" />
+            <View style={styles.roadmapIconBadge}>
+              <Ionicons name="git-network-outline" size={16} color="#fbbf24" />
+            </View>
             <Text style={styles.roadmapTitle} numberOfLines={1}>Roadmap Milestones</Text>
-            <Text style={styles.roadmapRatio}>
-              ({completedMilestones}/{totalMilestones})
-            </Text>
+            <View style={styles.roadmapRatioBadge}>
+              <Text style={styles.roadmapRatioText}>
+                {completedMilestones}/{totalMilestones}
+              </Text>
+            </View>
             <Ionicons
               name={showRoadmapList ? 'chevron-up' : 'chevron-down'}
-              size={13}
-              color="#8b949e"
+              size={14}
+              color="#94a3b8"
             />
           </TouchableOpacity>
 
@@ -193,13 +202,13 @@ export const SupremeGoalCard = ({
               onPress={handleUploadRoadmapFile}
               activeOpacity={0.75}
             >
-              <Ionicons name="add-circle" size={15} color="#eab308" />
+              <Ionicons name="document-attach-outline" size={15} color="#fbbf24" />
               <Text style={styles.plusUploadText}>Roadmap Doc/PDF</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Roadmap Progress Bar */}
+        {/* Roadmap Progress Bar Track */}
         <View style={styles.progressBarTrack}>
           <View
             style={[
@@ -207,6 +216,18 @@ export const SupremeGoalCard = ({
               { width: `${Math.round(roadmapProgress * 100)}%` }
             ]}
           />
+        </View>
+
+        {/* Progress Sub-Bar (Phases & % Counter) */}
+        <View style={styles.roadmapProgressSubRow}>
+          <Text style={styles.progressSubPhase}>
+            {completedMilestones === totalMilestones && totalMilestones > 0
+              ? 'All Phases Conquered 🏆'
+              : `Phase ${completedMilestones} of ${totalMilestones} Completed`}
+          </Text>
+          <Text style={styles.progressSubPercent}>
+            {Math.round(roadmapProgress * 100)}% Conquered
+          </Text>
         </View>
 
         {/* Attached Roadmap File/Photo Display Bar */}
@@ -240,32 +261,16 @@ export const SupremeGoalCard = ({
           </View>
         )}
 
-        {/* Expanded Roadmap Milestones List */}
+        {/* Expanded Roadmap Tree */}
         {showRoadmapList && (
-          <View style={styles.milestoneList}>
-            {roadmap.map((milestone) => (
-              <TouchableOpacity
-                key={milestone.id}
-                style={styles.milestoneItem}
-                onPress={() => onToggleMilestone(milestone.id)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={milestone.completed ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={16}
-                  color={milestone.completed ? '#22c55e' : '#6e7681'}
-                />
-                <Text
-                  style={[
-                    styles.milestoneText,
-                    milestone.completed && styles.milestoneDoneText
-                  ]}
-                >
-                  {milestone.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <MilestoneRoadmapTree
+            roadmap={roadmap}
+            onToggleMilestone={onToggleMilestone}
+            onUpdateMilestone={onUpdateMilestone}
+            onSetFinalMilestone={onSetFinalMilestone}
+            onAddMilestone={onAddMilestone}
+            onDeleteMilestone={onDeleteMilestone}
+          />
         )}
       </View>
 
@@ -569,13 +574,18 @@ const styles = StyleSheet.create({
     lineHeight: 19
   },
   roadmapCard: {
-    backgroundColor: '#090d14',
-    borderRadius: 16,
-    padding: 13,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.25)',
-    overflow: 'hidden'
+    backgroundColor: '#080d19',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    overflow: 'hidden',
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3
   },
   roadmapHeader: {
     flexDirection: 'row',
@@ -588,23 +598,39 @@ const styles = StyleSheet.create({
   roadmapHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
     flexShrink: 1,
-    minWidth: 130
+    minWidth: 140
+  },
+  roadmapIconBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   roadmapTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#f8fafc'
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: -0.2
   },
-  roadmapRatio: {
-    fontSize: 12,
+  roadmapRatioBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.18)',
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.45)'
+  },
+  roadmapRatioText: {
+    fontSize: 11,
     fontWeight: '900',
     color: '#fbbf24',
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6
+    letterSpacing: 0.3
   },
   roadmapHeaderRight: {
     flexDirection: 'row',
@@ -613,29 +639,54 @@ const styles = StyleSheet.create({
   plusUploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#161d28',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.45)',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 8
+    gap: 5,
+    backgroundColor: '#111827',
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.5)',
+    paddingHorizontal: 10,
+    paddingVertical: 5.5,
+    borderRadius: 10,
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3
   },
   plusUploadText: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: '#fbbf24',
     fontWeight: '800'
   },
   progressBarTrack: {
-    height: 7,
-    backgroundColor: '#1a2230',
+    height: 6,
+    backgroundColor: '#111827',
     borderRadius: 4,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    marginTop: 2
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#fbbf24',
-    borderRadius: 4
+    backgroundColor: '#f59e0b',
+    borderRadius: 4,
+    shadowColor: '#f59e0b',
+    shadowOpacity: 0.7,
+    shadowRadius: 5
+  },
+  roadmapProgressSubRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+    paddingHorizontal: 2
+  },
+  progressSubPhase: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#94a3b8'
+  },
+  progressSubPercent: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#fbbf24'
   },
   attachedRoadmapPill: {
     flexDirection: 'row',

@@ -23,6 +23,8 @@ import {
   updateSupremeDetails,
   updateSupremeRoadmap,
   toggleSupremeMilestone,
+  updateSupremeMilestone,
+  setSupremeFinalMilestone,
   addSupremeMilestone,
   deleteSupremeMilestone,
   DEFAULT_SUPREME_GOAL
@@ -350,8 +352,20 @@ export const StreakProvider = ({ children }) => {
     return updated;
   };
 
-  const addMilestone = async (title) => {
-    const updated = await addSupremeMilestone(title);
+  const updateMilestone = async (milestoneId, updates) => {
+    const updated = await updateSupremeMilestone(milestoneId, updates);
+    setSupremeGoal(updated);
+    return updated;
+  };
+
+  const setFinalMilestone = async (milestoneId) => {
+    const updated = await setSupremeFinalMilestone(milestoneId);
+    setSupremeGoal(updated);
+    return updated;
+  };
+
+  const addMilestone = async (title, isFinal = false) => {
+    const updated = await addSupremeMilestone(title, isFinal);
     setSupremeGoal(updated);
     return updated;
   };
@@ -500,6 +514,8 @@ export const StreakProvider = ({ children }) => {
         toggleSupremeGoal,
         updateSupremeInfo,
         toggleMilestone,
+        updateMilestone,
+        setFinalMilestone,
         addMilestone,
         deleteMilestone,
         checkStreakEligibility,

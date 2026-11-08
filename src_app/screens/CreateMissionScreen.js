@@ -21,6 +21,7 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
     challenge,
     habits,
     supremeGoal,
+    history,
     toggleHabit,
     addHabit,
     deleteHabit,
@@ -28,6 +29,8 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
     toggleSupremeGoal,
     updateSupremeInfo,
     toggleMilestone,
+    updateMilestone,
+    setFinalMilestone,
     addMilestone,
     deleteMilestone,
     checkStreakEligibility,
@@ -140,6 +143,7 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
         {/* 1. Daily Micro-Habits Checklist Section */}
         <MicroHabitList
           habits={habits}
+          history={history}
           onToggleHabit={toggleHabit}
           onAddHabit={addHabit}
           onDeleteHabit={deleteHabit}
@@ -154,6 +158,10 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
           onToggleDailyGoal={toggleSupremeGoal}
           onOpenSettings={() => setSupremeModalVisible(true)}
           onToggleMilestone={toggleMilestone}
+          onUpdateMilestone={updateMilestone}
+          onSetFinalMilestone={setFinalMilestone}
+          onAddMilestone={addMilestone}
+          onDeleteMilestone={deleteMilestone}
           onUpdateDetails={updateSupremeInfo}
         />
 
@@ -169,6 +177,7 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
         onToggleMilestone={toggleMilestone}
         onAddMilestone={addMilestone}
         onDeleteMilestone={deleteMilestone}
+        onSetFinalMilestone={setFinalMilestone}
       />
     </View>
   );
