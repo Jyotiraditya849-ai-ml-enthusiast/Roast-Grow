@@ -274,6 +274,8 @@ export const StreakProvider = ({ children }) => {
   const toggleHabit = async (habitId) => {
     const updated = await toggleMicroHabit(habitId);
     setHabits(updated);
+    const updatedHistory = await getActivityHistory();
+    setHistory({ ...updatedHistory });
     await syncWidgetState({ habits: updated });
     await checkAndTriggerAutoCheckIn(updated, supremeGoal);
   };
@@ -293,8 +295,17 @@ export const StreakProvider = ({ children }) => {
     await syncWidgetState({ habits: updated });
   };
 
-  // Remove a micro-habit
+  // Remove a micro-habit (Core foundational habits are protected)
   const deleteHabit = async (habitId) => {
+    if (habitId?.startsWith('core_')) {
+      showCyberNotification({
+        type: 'warning',
+        title: 'Core Pillar Locked 🔒',
+        message: 'The 4 non-negotiable core habits cannot be deleted.',
+        hudTag: '[HABIT // NON_EDITABLE]'
+      });
+      return;
+    }
     const updated = habits.filter((h) => h.id !== habitId);
     setHabits(updated);
     await saveMicroHabits(updated);

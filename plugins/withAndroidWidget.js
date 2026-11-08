@@ -14,11 +14,13 @@ const withAndroidWidgetFiles = (config) => {
       const projectRoot = config.modRequest.projectRoot;
       const androidDir = config.modRequest.platformProjectRoot;
 
-      // 1. Copy layout and xml info files into android res
+      // 1. Copy layout, drawable, and xml info files into android res
       const layoutDir = path.join(androidDir, 'app', 'src', 'main', 'res', 'layout');
       const xmlDir = path.join(androidDir, 'app', 'src', 'main', 'res', 'xml');
+      const drawableDir = path.join(androidDir, 'app', 'src', 'main', 'res', 'drawable');
       fs.mkdirSync(layoutDir, { recursive: true });
       fs.mkdirSync(xmlDir, { recursive: true });
+      fs.mkdirSync(drawableDir, { recursive: true });
 
       const layoutSource = path.join(
         projectRoot,
@@ -42,6 +44,24 @@ const withAndroidWidgetFiles = (config) => {
       }
       if (fs.existsSync(xmlSource)) {
         fs.copyFileSync(xmlSource, path.join(xmlDir, 'streak_widget_info.xml'));
+      }
+
+      // Copy custom drawable assets
+      const drawableSourceDir = path.join(
+        projectRoot,
+        'native-widgets',
+        'android',
+        'res',
+        'drawable'
+      );
+      if (fs.existsSync(drawableSourceDir)) {
+        const files = fs.readdirSync(drawableSourceDir);
+        for (const file of files) {
+          fs.copyFileSync(
+            path.join(drawableSourceDir, file),
+            path.join(drawableDir, file)
+          );
+        }
       }
 
       // 2. Copy Kotlin source files into the com.streaktracker.app package
@@ -112,12 +132,35 @@ const withAndroidWidgetManifest = (config) => {
 const withAndroidWidgetMainApplication = (config) => {
   return withMainApplication(config, (config) => {
     let contents = config.modResults.contents;
-    if (!contents.includes('WidgetBridgePackage()')) {
+
+    // 1. Ensure import of WidgetBridgePackage is present
+    if (!contents.includes('WidgetBridgePackage')) {
       contents = contents.replace(
-        /PackageList\(this\)\.packages\.apply\s*\{/g,
-        'PackageList(this).packages.apply {\n              add(WidgetBridgePackage())'
+        /package\s+[\w\.]+/,
+        '$&\n\nimport com.streaktracker.app.WidgetBridgePackage'
       );
     }
+
+    // 2. Add WidgetBridgePackage() into the React Native packages list across all Expo SDK 51 variations
+    if (!contents.includes('WidgetBridgePackage()')) {
+      if (contents.includes('val packages = PackageList(this).packages')) {
+        contents = contents.replace(
+          'val packages = PackageList(this).packages',
+          'val packages = PackageList(this).packages.toMutableList()\n            packages.add(WidgetBridgePackage())'
+        );
+      } else if (/PackageList\(this\)\.packages\.apply\s*\{/.test(contents)) {
+        contents = contents.replace(
+          /PackageList\(this\)\.packages\.apply\s*\{/g,
+          'PackageList(this).packages.apply {\n              add(WidgetBridgePackage())'
+        );
+      } else if (contents.includes('PackageList(this).packages')) {
+        contents = contents.replace(
+          'PackageList(this).packages',
+          'PackageList(this).packages.apply {\n              add(WidgetBridgePackage())\n            }'
+        );
+      }
+    }
+
     config.modResults.contents = contents;
     return config;
   });

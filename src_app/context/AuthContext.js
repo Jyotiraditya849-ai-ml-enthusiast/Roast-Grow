@@ -20,20 +20,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const accounts = await getAllStoredAccounts();
+        let accounts = await getAllStoredAccounts();
+        if (!accounts || accounts.length === 0) {
+          // Initialize default profile matching challenger ID from screenshot
+          const defaultUser = {
+            id: 'jyotiraditya_369',
+            username: 'jyotiraditya_369',
+            displayName: 'Jyotiraditya',
+            avatar: '⚡',
+            pin: null,
+            createdAt: Date.now()
+          };
+          accounts = [defaultUser];
+          await saveAllStoredAccounts(accounts);
+          await saveStoredActiveSession(defaultUser.username);
+        }
         setSavedAccounts(accounts);
 
         const activeId = await getStoredActiveSession();
-        if (activeId) {
-          const matched = accounts.find((a) => a.username.toLowerCase() === activeId.toLowerCase());
-          if (matched) {
-            setActiveUserStorageId(matched.username);
-            setCurrentUser(matched);
-          } else if (accounts.length > 0) {
-            // Fallback to first account
-            setActiveUserStorageId(accounts[0].username);
-            setCurrentUser(accounts[0]);
-          }
+        const matched = accounts.find((a) => a.username.toLowerCase() === (activeId || '').toLowerCase());
+        const targetUser = matched || accounts[0];
+        if (targetUser) {
+          setActiveUserStorageId(targetUser.username);
+          setCurrentUser(targetUser);
         }
       } catch (e) {
         console.error('Error initializing auth:', e);

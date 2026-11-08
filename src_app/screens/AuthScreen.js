@@ -15,6 +15,7 @@ import { useAuth, AVATAR_OPTIONS } from '../context/AuthContext';
 import { useCyberNotification } from '../context/NotificationContext';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { THEME } from '../theme';
 
 export const AuthScreen = () => {
   const { login, register, resetPin, savedAccounts } = useAuth();
@@ -492,13 +493,15 @@ export const AuthScreen = () => {
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
-    backgroundColor: '#090d14'
+    backgroundColor: THEME.bgApp,
+    width: '100%'
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 36
+    paddingVertical: 36,
+    width: '100%'
   },
   brandHeader: {
     alignItems: 'center',
@@ -508,15 +511,15 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 24,
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderWidth: 2,
-    borderColor: '#ea580c',
+    borderColor: THEME.marigold,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
-    shadowColor: '#ea580c',
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.5,
     shadowRadius: 14,
     elevation: 8
   },
@@ -528,18 +531,18 @@ const styles = StyleSheet.create({
   },
   brandSubtitle: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: THEME.textMuted,
     fontWeight: '600',
     marginTop: 4
   },
   tabToggle: {
     flexDirection: 'row',
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderRadius: 14,
     padding: 4,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#1e2636'
+    borderWidth: 1.5,
+    borderColor: THEME.borderMedium
   },
   tabToggleBtn: {
     flex: 1,
@@ -548,22 +551,24 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   tabToggleBtnActive: {
-    backgroundColor: '#1e2636'
+    backgroundColor: THEME.bgCardElevated,
+    borderWidth: 1,
+    borderColor: THEME.borderHighlight
   },
   tabToggleText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#94a3b8'
+    color: THEME.textMuted
   },
   tabToggleTextActive: {
-    color: '#f97316'
+    color: THEME.marigoldLight
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    backgroundColor: 'rgba(255, 0, 63, 0.12)',
     borderWidth: 1.5,
-    borderColor: 'rgba(239, 68, 68, 0.45)',
+    borderColor: 'rgba(255, 0, 63, 0.45)',
     padding: 12,
     borderRadius: 14,
     marginBottom: 16,
@@ -576,12 +581,12 @@ const styles = StyleSheet.create({
     flex: 1
   },
   formCard: {
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderRadius: 22,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: '#1e2636',
-    shadowColor: '#000',
+    borderColor: THEME.borderMedium,
+    shadowColor: THEME.blue,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -590,7 +595,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: THEME.textMuted,
     marginBottom: 8,
     marginTop: 6
   },
@@ -602,16 +607,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#090d14',
+    backgroundColor: THEME.bgInput,
     borderWidth: 1.5,
-    borderColor: '#2d3748',
+    borderColor: THEME.borderMedium,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8
   },
   avatarChoiceSelected: {
-    borderColor: '#ea580c',
-    backgroundColor: 'rgba(234, 88, 12, 0.15)'
+    borderColor: THEME.marigold,
+    backgroundColor: THEME.marigoldBg
   },
   avatarChoiceText: {
     fontSize: 20
@@ -619,15 +624,15 @@ const styles = StyleSheet.create({
   userIdInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#090d14',
+    backgroundColor: THEME.bgInput,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2d3748',
+    borderColor: THEME.borderMedium,
     paddingHorizontal: 12,
     marginBottom: 14
   },
   atSymbol: {
-    color: '#f97316',
+    color: THEME.marigoldLight,
     fontSize: 16,
     fontWeight: '900',
     marginRight: 4
@@ -639,10 +644,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   input: {
-    backgroundColor: '#090d14',
+    backgroundColor: THEME.bgInput,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2d3748',
+    borderColor: THEME.borderMedium,
     paddingHorizontal: 12,
     paddingVertical: 12,
     color: '#ffffff',
@@ -650,16 +655,16 @@ const styles = StyleSheet.create({
     marginBottom: 14
   },
   submitButton: {
-    backgroundColor: '#ea580c',
+    backgroundColor: THEME.crimson,
     paddingVertical: 15,
     borderRadius: 14,
     alignItems: 'center',
     marginTop: 6,
-    borderWidth: 1,
-    borderColor: '#fb923c',
-    shadowColor: '#ea580c',
+    borderWidth: 2,
+    borderColor: THEME.marigold,
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 6
   },

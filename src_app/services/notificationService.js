@@ -4,14 +4,16 @@ import * as Notifications from 'expo-notifications';
 // Channel ID for Android notification grouping
 const REMINDER_CHANNEL_ID = 'roast-grow-reminders';
 
-// Configure how notifications appear when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: false, // In-app, our Cyberpunk HUD Banner renders notifications cleanly
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Configure how notifications appear when app is in foreground (Native iOS & Android only)
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: false, // In-app, our Cyberpunk HUD Banner renders notifications cleanly
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 /**
  * Configure Android notification channels with high priority, sound & vibration

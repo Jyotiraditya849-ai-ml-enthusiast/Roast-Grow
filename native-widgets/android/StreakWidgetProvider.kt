@@ -21,60 +21,111 @@ class StreakWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val prefs = context.getSharedPreferences("StreakWidgetPrefs", Context.MODE_PRIVATE)
-        val streak = prefs.getInt("streakCount", 0)
-        val title = prefs.getString("challengeTitle", "100 Days of Code") ?: "100 Days of Code"
-        val status = prefs.getString("status", "ACTIVE") ?: "ACTIVE"
-        val motivation = prefs.getString("aiMotivation", "Show up and lock in today's micro-habits.") ?: ""
+        var streak = prefs.getInt("streakCount", -1)
+        var title = prefs.getString("challengeTitle", null)
+        var status = prefs.getString("status", null)
+        var motivation = prefs.getString("aiMotivation", null)
 
         // Supreme Goal & Daily Habits Progress
-        val isSupremeGoalDone = prefs.getBoolean("isSupremeGoalDone", false)
-        val completedHabitsCount = prefs.getInt("completedHabitsCount", 0)
-        val totalHabitsCount = prefs.getInt("totalHabitsCount", 0)
-        val incompleteHabitsCount = prefs.getInt("incompleteHabitsCount", 0)
+        var isSupremeGoalDone = prefs.getBoolean("isSupremeGoalDone", false)
+        var completedHabitsCount = prefs.getInt("completedHabitsCount", 0)
+        var totalHabitsCount = prefs.getInt("totalHabitsCount", 0)
+        var incompleteHabitsCount = prefs.getInt("incompleteHabitsCount", 0)
+
+        // Fallback: If SharedPreferences has not been initialized yet (streak == -1), query the app's AsyncStorage SQLite database (RKStorage)
+        if (streak < 0) {
+            try {
+                val dbFile = context.getDatabasePath("RKStorage")
+                if (dbFile != null && dbFile.exists()) {
+                    val db = android.database.sqlite.SQLiteDatabase.openDatabase(
+                        dbFile.path,
+                        null,
+                        android.database.sqlite.SQLiteDatabase.OPEN_READONLY
+                    )
+                    // Query backup key or active challenge
+                    val cursor = db.rawQuery(
+                        "SELECT value FROM catalystLocalStorage WHERE key = '@streak_widget_sync_backup' OR key LIKE '%@streak_active_challenge%' LIMIT 1",
+                        null
+                    )
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val jsonStr = cursor.getString(0)
+                        if (jsonStr != null) {
+                            val jsonObj = org.json.JSONObject(jsonStr)
+                            if (jsonObj.has("streakCount")) {
+                                streak = jsonObj.optInt("streakCount", 0)
+                            } else if (jsonObj.has("currentStreak")) {
+                                streak = jsonObj.optInt("currentStreak", 0)
+                            }
+                            if (title == null) {
+                                title = jsonObj.optString("challengeTitle", jsonObj.optString("title", "100 Days of Code"))
+                            }
+                            if (status == null) {
+                                status = jsonObj.optString("status", "ACTIVE")
+                            }
+                            if (motivation == null) {
+                                motivation = jsonObj.optString("aiMotivation", "")
+                            }
+                        }
+                    }
+                    cursor?.close()
+                    db.close()
+                }
+            } catch (e: Exception) {
+                // Ignore fallback exception and use defaults
+            }
+        }
+
+        if (streak < 0) streak = 0
+        if (title == null) title = "100 Days of Code"
+        if (status == null) status = "ACTIVE"
+        if (motivation == null) motivation = "Show up and lock in today's micro-habits."
 
         val isBroken = status == "BROKEN" || streak == 0
         val isFrozen = status == "FROZEN"
 
         val accentColor = when {
-            isBroken -> Color.parseColor("#EF4444") // Red
-            isFrozen -> Color.parseColor("#38BDF8") // Ice Blue
-            else -> Color.parseColor("#F97316")     // Flame Orange
+            isBroken -> Color.parseColor("#FF003F") // Pure Blood Red when 0 or broken
+            isFrozen -> Color.parseColor("#38BDF8") // Cyber Ice Blue
+            else -> Color.parseColor("#F59E0B")     // Radiant Marigold
         }
+
+        val formattedTitle = if (title.startsWith("⚡")) title.uppercase() else "⚡ ${title.uppercase()}"
 
         for (widgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.streak_widget_layout)
 
-            // 1. Streak Counter & Status
+            // 1. Streak Cockpit Counter & Status
             views.setTextViewText(R.id.widget_streak_number, streak.toString())
             views.setTextColor(R.id.widget_streak_number, accentColor)
-            views.setTextViewText(R.id.widget_challenge_title, title.uppercase())
+            views.setTextViewText(R.id.widget_challenge_title, formattedTitle)
             views.setTextViewText(
                 R.id.widget_status_badge,
-                if (isBroken) "💀 ROAST" else if (isFrozen) "❄️ FROZEN" else "🔥 ACTIVE"
+                if (isBroken) "💀 RESET // 0D" else if (isFrozen) "❄️ FROZEN" else "🔥 ACTIVE"
             )
             views.setTextColor(R.id.widget_status_badge, accentColor)
 
-            // 2. Supreme Goal Completion Status
+            // 2. Supreme Mission Completion Status
             if (isSupremeGoalDone) {
-                views.setTextViewText(R.id.widget_supreme_goal_status, "🎯 Supreme Goal: Done ✓")
-                views.setTextColor(R.id.widget_supreme_goal_status, Color.parseColor("#39D353")) // Green
+                views.setTextViewText(R.id.widget_supreme_goal_status, "🎯 Supreme: COMPLETED ✓")
+                views.setTextColor(R.id.widget_supreme_goal_status, Color.parseColor("#10B981")) // Emerald Green
             } else {
-                views.setTextViewText(R.id.widget_supreme_goal_status, "🎯 Supreme Goal: Incomplete ⏳")
+                views.setTextViewText(R.id.widget_supreme_goal_status, "🎯 Supreme: PENDING ⏳")
                 views.setTextColor(R.id.widget_supreme_goal_status, Color.parseColor("#EF4444")) // Red alert
             }
 
             // 3. Daily Habits Status (Incomplete Count Reminder)
             if (totalHabitsCount > 0 && incompleteHabitsCount == 0) {
-                views.setTextViewText(R.id.widget_habits_status, "⚡ Habits: All $totalHabitsCount Done ✓")
-                views.setTextColor(R.id.widget_habits_status, Color.parseColor("#39D353")) // Green
+                views.setTextViewText(R.id.widget_habits_status, "⚡ Habits: $totalHabitsCount/$totalHabitsCount Locked [100%] ✓")
+                views.setTextColor(R.id.widget_habits_status, Color.parseColor("#10B981")) // Emerald Green
             } else {
-                val habitsText = "⚡ Habits: $completedHabitsCount/$totalHabitsCount ($incompleteHabitsCount Incomplete ⏳)"
+                val habitsText = "⚡ Habits: $completedHabitsCount/$totalHabitsCount ($incompleteHabitsCount Pending ⏳)"
                 views.setTextViewText(R.id.widget_habits_status, habitsText)
-                views.setTextColor(R.id.widget_habits_status, Color.parseColor("#EAB308")) // Gold/Yellow
+                views.setTextColor(R.id.widget_habits_status, Color.parseColor("#F59E0B")) // Marigold Gold
             }
 
-            // 4. AI Motivation / Advice
-            views.setTextViewText(R.id.widget_ai_motivation, "\"$motivation\"")
+            // 4. AI Motivation / Reality Check Advice (Clean quotes)
+            val cleanQuote = motivation.trim().removePrefix("\"").removeSuffix("\"")
+            views.setTextViewText(R.id.widget_ai_motivation, "\"$cleanQuote\"")
 
             // Intent to open app when tapping the widget
             val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)

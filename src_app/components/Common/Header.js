@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Platform, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useCyberNotification } from '../../context/NotificationContext';
 import * as Haptics from 'expo-haptics';
+import { THEME } from '../../theme';
 
-export const Header = ({ currentStreak, isBroken }) => {
+export const Header = React.memo(({ currentStreak, isBroken }) => {
   const { currentUser, logout } = useAuth();
+  const { showCyberDialog } = useCyberNotification();
 
-  const todayFormatted = new Date().toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
+  const isPureRed = isBroken || currentStreak === 0;
 
   const handleLogout = () => {
     const doLogout = async () => {
@@ -21,20 +20,16 @@ export const Header = ({ currentStreak, isBroken }) => {
       await logout();
     };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm(`Log out of @${currentUser?.username || 'account'}?`)) {
-        doLogout();
-      }
-    } else {
-      Alert.alert(
-        'Log Out',
-        `Are you sure you want to log out of @${currentUser?.username || 'your account'}?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Log Out', style: 'destructive', onPress: doLogout }
-        ]
-      );
-    }
+    showCyberDialog({
+      type: 'warning',
+      title: 'Log Out Challenger?',
+      message: `Log out of @${currentUser?.username || 'your account'}? Your streak progress remains safe locally.`,
+      confirmText: 'LOG OUT',
+      cancelText: 'ABORT',
+      isDestructive: true,
+      hudTag: '[AUTH // LOGOUT_GATE]',
+      onConfirm: doLogout
+    });
   };
 
   return (
@@ -42,8 +37,8 @@ export const Header = ({ currentStreak, isBroken }) => {
       <View style={styles.container}>
         {/* User Identity / Avatar */}
         <View style={styles.leftGroup}>
-          <View style={styles.avatarBadge}>
-            <Text style={styles.avatarEmoji}>{currentUser?.avatar || '🔥'}</Text>
+          <View style={[styles.avatarBadge, isPureRed && styles.avatarBadgeRed]}>
+            <Text style={styles.avatarEmoji}>{currentUser?.avatar || '⚡'}</Text>
             <View style={styles.avatarOnlineDot} />
           </View>
           <View style={{ flex: 1, paddingRight: 6 }}>
@@ -56,20 +51,30 @@ export const Header = ({ currentStreak, isBroken }) => {
               </View>
             </View>
             <Text style={styles.userHandle} numberOfLines={1}>
-              @{currentUser?.username || 'guest'} • {todayFormatted}
+              @{currentUser?.username || 'jyotiraditya_369'}
             </Text>
           </View>
         </View>
 
         {/* Right side: Streak Badge & Logout Button */}
         <View style={styles.rightGroup}>
-          <View style={[styles.streakIndicator, isBroken && styles.streakBroken]}>
+          <View
+            style={[
+              styles.streakIndicator,
+              isPureRed ? styles.streakBrokenRed : styles.streakIndicatorActive
+            ]}
+          >
             <Ionicons
-              name={isBroken ? 'skull' : 'flame'}
-              size={16}
-              color={isBroken ? '#ef4444' : '#f97316'}
+              name={isPureRed ? 'skull' : 'flame'}
+              size={15}
+              color={isPureRed ? THEME.crimsonPureRed : THEME.marigold}
             />
-            <Text style={[styles.streakCountText, isBroken && styles.textRed]}>
+            <Text
+              style={[
+                styles.streakCountText,
+                isPureRed ? styles.textPureRed : styles.textActive
+              ]}
+            >
               {currentStreak}d
             </Text>
           </View>
@@ -80,17 +85,17 @@ export const Header = ({ currentStreak, isBroken }) => {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             title="Log Out"
           >
-            <Feather name="log-out" size={15} color="#8b949e" />
+            <Feather name="log-out" size={15} color={THEME.textMuted} />
           </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#0d1117',
+    backgroundColor: THEME.bgApp,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : Platform.OS === 'web' ? 12 : 0
   },
   container: {
@@ -99,8 +104,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: '#21262d'
+    borderBottomWidth: 1.5,
+    borderColor: THEME.borderSubtle,
+    backgroundColor: THEME.bgApp
   },
   leftGroup: {
     flexDirection: 'row',
@@ -112,12 +118,21 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: '#161b22',
+    backgroundColor: THEME.bgCard,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(249, 115, 22, 0.4)',
-    position: 'relative'
+    borderColor: THEME.blue,
+    position: 'relative',
+    shadowColor: THEME.blue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  avatarBadgeRed: {
+    borderColor: THEME.crimsonPureRed,
+    shadowColor: THEME.crimsonPureRed
   },
   avatarEmoji: {
     fontSize: 22
@@ -129,9 +144,9 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#22c55e',
+    backgroundColor: THEME.success,
     borderWidth: 2,
-    borderColor: '#0d1117'
+    borderColor: THEME.bgApp
   },
   userNameRow: {
     flexDirection: 'row',
@@ -141,28 +156,29 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#ffffff',
+    color: THEME.textWhite,
     letterSpacing: -0.2
   },
   proBadge: {
-    backgroundColor: 'rgba(249, 115, 22, 0.15)',
-    borderWidth: 1,
-    borderColor: '#f97316',
+    backgroundColor: THEME.marigoldBg,
+    borderWidth: 1.2,
+    borderColor: THEME.marigold,
     borderRadius: 6,
     paddingHorizontal: 5,
     paddingVertical: 1
   },
   proBadgeText: {
-    color: '#f97316',
+    color: THEME.marigoldLight,
     fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 0.5
+    letterSpacing: 0.8
   },
   userHandle: {
     fontSize: 11,
-    color: '#8b949e',
-    fontWeight: '600',
-    marginTop: 1
+    color: THEME.blueLight,
+    fontWeight: '700',
+    marginTop: 1,
+    letterSpacing: 0.3
   },
   rightGroup: {
     flexDirection: 'row',
@@ -172,31 +188,36 @@ const styles = StyleSheet.create({
   streakIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(249, 115, 22, 0.12)',
     paddingHorizontal: 11,
     paddingVertical: 6,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'rgba(249, 115, 22, 0.6)',
     gap: 5
   },
-  streakBroken: {
-    borderColor: '#ef4444',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)'
+  streakIndicatorActive: {
+    backgroundColor: THEME.crimsonBg,
+    borderColor: THEME.crimson
+  },
+  streakBrokenRed: {
+    borderColor: THEME.crimsonPureRed,
+    backgroundColor: 'rgba(255, 0, 63, 0.16)'
   },
   streakCountText: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#f97316'
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
   },
-  textRed: {
-    color: '#ef4444'
+  textPureRed: {
+    color: THEME.crimsonPureRed
+  },
+  textActive: {
+    color: THEME.marigoldLight
   },
   logoutBtn: {
     padding: 9,
     borderRadius: 12,
-    backgroundColor: '#161b22',
+    backgroundColor: THEME.bgCard,
     borderWidth: 1,
-    borderColor: '#30363d'
+    borderColor: THEME.borderMedium
   }
 });

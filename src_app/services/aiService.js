@@ -2,32 +2,101 @@ import { API_CONFIG } from '../config/apiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../storage/asyncStorage';
 
-// Built-in intelligent fallback messages for offline or keyless use
-const FALLBACK_HYPE_MESSAGES = [
-  (streak, habitCount, mood) =>
-    `🔥 Day ${streak}! You're operating on pure discipline. ${habitCount} micro-habits conquered. Keep this fire burning!`,
-  (streak, habitCount, mood) =>
-    `⚡ Unstoppable! ${streak} consecutive days of relentless focus. The leaderboard is looking up at you!`,
-  (streak, habitCount, mood) =>
-    `🚀 Streak status: LEGENDARY (${streak} Days). You turned intentions into cold hard execution today. Respect!`,
-  (streak, habitCount, mood) =>
-    `💎 ${streak} days locked in! Mood: ${mood || '🤩'}. Excellence isn't an act, it's your daily habit now.`,
-  (streak, habitCount, mood) =>
-    `👑 Day ${streak} in the bag! Every single rep counts. You are building an undeniable future self.`
+// ============================================================================
+// HIGH-IMPACT PSYCHOLOGICAL AI MOTIVATION & REALITY CHECK ENGINE
+// ============================================================================
+
+// 1. STOIC & BRUTAL REALITY CHECKS (0-Day Resets, Broken Streaks & Missed Days)
+const ROAST_REALITY_CHECKS = [
+  (missedDays) =>
+    `💀 Zero days build zero empires. Procrastination is paying high interest on a loan of temporary comfort. Stop bargaining with weakness—complete habit #1 right now!`,
+  (missedDays) =>
+    `🚨 Marcus Aurelius warned us: "You could be good today; yet you choose tomorrow." Tomorrow is where dreams rot. Reclaim your self-respect and check in!`,
+  (missedDays) =>
+    `⚡ Comfort is the silent killer of greatness. You broke the streak, not your destiny. Stand up, take a deep breath, and begin the comeback of a lifetime!`,
+  (missedDays) =>
+    `🔥 David Goggins rule: The mind quits 100 times before you actually fail. Don't negotiate with resistance. Pick up the pen, do the rep, and resurrect Day 1.`,
+  (missedDays) =>
+    `🪦 Look at your "Why I Failed" handwritten note. Are you really going to surrender to the exact same trap today? Break the cycle NOW!`,
+  (missedDays) =>
+    `💎 Discipline is choosing between what you want NOW and what you want MOST. Day 0 ends the very second you conquer your first micro-habit. Move!`,
+  (missedDays) =>
+    `🎯 A year from today, you will either celebrate this comeback or weep over another wasted cycle. What you do in the next 15 minutes decides that future.`,
+  (missedDays) =>
+    `🌪️ Your brain is whispering that "starting Monday is better". That's resistance lying to your face. True champions restart on the darkest hour of a broken day.`,
+  (missedDays) =>
+    `🛡️ The distance between who you are and who you want to be is what you do when you don't feel like doing it. Silence the excuses and lock in today!`,
+  (missedDays) =>
+    `👑 Every master was once a disaster. But masters never stayed on the bench complaining. Clear the slate, reset your stance, and register Day 1!`
 ];
 
-const FALLBACK_ROAST_MESSAGES = [
-  (missedDays) =>
-    `💀 Oh look who decided to show up! Did your goals take a vacation too? Day 0 looks cozy on you. Get up and code!`,
-  (missedDays) =>
-    `🚨 Breaking news: The streak has died of severe neglect. Zero days. No excuses. Reset your ego and check in!`,
-  (missedDays) =>
-    `🫠 You had one job: show up. Even my Wi-Fi disconnects with more dignity than that. Restart now or stay average!`,
-  (missedDays) =>
-    `🪦 Here lies your streak: 2026 - 2026. Cause of death: "I'll do it tomorrow". Get back to work right now!`,
-  (missedDays) =>
-    `🤡 0-Day Warrior! Your future self is currently facepalming so hard. Prove me wrong and check in today!`
+// 2. EARLY CRUCIBLE (Days 1 - 6: The Battle of Neural Rewiring)
+const HYPE_EARLY_CRUCIBLE = [
+  (streak, habitCount, mood) =>
+    `🔥 Day ${streak}! The first week is the psychological filter where 90% surrender to inertia. You held the line today—your neural pathways are restructuring!`,
+  (streak, habitCount, mood) =>
+    `⚡ Day ${streak} in the bag! You didn't negotiate with laziness today. Small disciplines repeated daily create undeniable momentum. Keep this fire burning!`,
+  (streak, habitCount, mood) =>
+    `🛡️ Day ${streak} conquered! Showing up on low-friction days is easy; showing up today proves character. You are laying the foundation of an absolute powerhouse.`,
+  (streak, habitCount, mood) =>
+    `🚀 Day ${streak}! The hardest step is breaking inertia. Now you're moving. Rule #1 of greatness: Never break the chain two days in a row!`,
+  (streak, habitCount, mood) =>
+    `💎 Day ${streak} locked! Mood: ${mood || '🔥'}. You kept a promise to yourself today, and self-trust is the bedrock of unstoppable confidence.`
 ];
+
+// 3. IDENTITY SHIFT (Days 7 - 20: Transcending Effort into Automatic Habit)
+const HYPE_IDENTITY_SHIFT = [
+  (streak, habitCount, mood) =>
+    `💎 Day ${streak}! You have entered identity-shift territory. You are no longer someone "trying" to stay consistent; you ARE someone who executes daily without debate.`,
+  (streak, habitCount, mood) =>
+    `⚡ Day ${streak}! The friction is dissolving and the routine is taking command. You have built undeniable proof that you are in control of your destiny.`,
+  (streak, habitCount, mood) =>
+    `🔥 Day ${streak} secured! Two weeks of ruthless self-accountability. While others look for shortcuts, you are building an impregnable fortress of discipline.`,
+  (streak, habitCount, mood) =>
+    `🎯 Day ${streak}! The noise of doubt is fading, replaced by the rhythm of routine. Protect this streak like your life depends on it—momentum is sacred!`
+];
+
+// 4. ELITE FLOW (Days 21 - 49: The Top 1% Standard)
+const HYPE_ELITE_FLOW = [
+  (streak, habitCount, mood) =>
+    `👑 Day ${streak}! You've crossed the 21-day threshold into elite territory. What was once hard is now your baseline. Elevate the quality of every single rep today!`,
+  (streak, habitCount, mood) =>
+    `⚔️ Day ${streak}! 99% of people quit their resolutions before this point. You are operating on a frequency that average minds cannot comprehend. Dominate!`,
+  (streak, habitCount, mood) =>
+    `⚡ Day ${streak}! Consistency is the greatest unfair advantage in the modern world. Your compounding results are quietly multiplying behind the scenes.`,
+  (streak, habitCount, mood) =>
+    `💎 Day ${streak} locked in! Mood: ${mood || '🤩'}. You don't need motivation anymore—you have built a cold, clean machine of daily execution.`
+];
+
+// 5. CENTURY VANGUARD (Days 50 - 99: The Unstoppable Compounding Dynamo)
+const HYPE_CENTURY_VANGUARD = [
+  (streak, habitCount, mood) =>
+    `🌟 Day ${streak}! Over halfway to the legendary 100-Day Centurion status! You are outworking your former self and silencing every whisper of doubt.`,
+  (streak, habitCount, mood) =>
+    `🔥 Day ${streak}! Half a century of consecutive execution. The habits you conquer today will echo in your career and character for the next decade!`,
+  (streak, habitCount, mood) =>
+    `⚡ Day ${streak}! You are in rare air now. Most people never witness what they are truly capable of. You are witnessing it every single morning.`
+];
+
+// 6. CENTURION & BEYOND (Days 100+: Living Legend)
+const HYPE_CENTURION = [
+  (streak) =>
+    `👑 100 DAYS CENTURION! You conquered the entire 100-Day Crucible! What 99% abandoned as impossible, you transformed into your daily reality. You are officially top 1%!`,
+  (streak) =>
+    `🏛️ Day ${streak}! You are a living monument to relentless consistency. What started as a challenge is now your lifelong empire. There is no ceiling for you!`
+];
+
+/**
+ * Format intelligent habit and mood tag to append to AI messages
+ */
+const getHabitContextTag = (habitCount) => {
+  if (habitCount >= 4) {
+    return ' [✓ All 4 Core Habits locked with military precision]';
+  } else if (habitCount > 0) {
+    return ` [⚡ ${habitCount}/4 Habits secured — finish the rest!]`;
+  }
+  return '';
+};
 
 /**
  * Generate AI motivation or roast based on user state
@@ -68,8 +137,8 @@ export const generateAIMessage = async ({
     try {
       if (API_CONFIG.PROVIDER === 'gemini') {
         const prompt = isHype
-          ? `User is on Day ${streak} of "${challengeTitle}". Mood: ${mood}. Today's habits done: ${completedHabitCount}. Journal reflection: "${journalText}". Give them a high-energy, 2-sentence hype boost!`
-          : `User has broken their streak (0 days active) on "${challengeTitle}". Missed days: ${missedDays || 1}. Journal excuse: "${journalText}". Give them a funny, witty, strict tough-love roast under 3 sentences to get them moving!`;
+          ? `User is on Day ${streak} of "${challengeTitle}". Mood: ${mood}. Today's habits done: ${completedHabitCount}/4. Journal reflection: "${journalText}". Give them a high-energy, deeply inspiring and psychological 2-sentence momentum boost!`
+          : `User has broken their streak (0 days active) on "${challengeTitle}". Missed days: ${missedDays || 1}. Journal excuse: "${journalText}". Give them a stoic, punchy, tough-love reality check under 3 sentences to get them back into action immediately!`;
 
         const response = await fetch(
           `${API_CONFIG.GEMINI_ENDPOINT}?key=${activeKey}`,
@@ -82,8 +151,8 @@ export const generateAIMessage = async ({
                 parts: [{ text: isHype ? API_CONFIG.PROMPTS.HYPE_SYSTEM : API_CONFIG.PROMPTS.ROAST_SYSTEM }]
               },
               generationConfig: {
-                temperature: 0.8,
-                maxOutputTokens: 120
+                temperature: 0.85,
+                maxOutputTokens: 140
               }
             })
           }
@@ -108,29 +177,30 @@ export const generateAIMessage = async ({
 
   // High-voltage contextual offline generative engine
   if (isHype) {
-    if (streak === 100) {
-      return {
-        text: '👑 100 DAYS CENTURION! You conquered the entire 100-Day Challenge! What 99% quit, you conquered. You are officially in the top 1%!',
-        type: 'hype',
-        source: 'offline-engine'
-      };
-    }
-    if (streak > 100) {
-      return {
-        text: `⚡ Day ${streak}! You went beyond the 100-day target and now you're building an unstoppable developer empire day by day!`,
-        type: 'hype',
-        source: 'offline-engine'
-      };
+    let pool;
+    if (streak >= 100) {
+      pool = HYPE_CENTURION;
+    } else if (streak >= 50) {
+      pool = HYPE_CENTURY_VANGUARD;
+    } else if (streak >= 21) {
+      pool = HYPE_ELITE_FLOW;
+    } else if (streak >= 7) {
+      pool = HYPE_IDENTITY_SHIFT;
+    } else {
+      pool = HYPE_EARLY_CRUCIBLE;
     }
 
-    const generator = FALLBACK_HYPE_MESSAGES[Math.floor(Math.random() * FALLBACK_HYPE_MESSAGES.length)];
+    const generator = pool[Math.floor(Math.random() * pool.length)];
+    const baseText = generator(streak, completedHabitCount, mood);
+    const habitTag = getHabitContextTag(completedHabitCount);
+
     return {
-      text: generator(streak, completedHabitCount, mood),
+      text: `${baseText}${habitTag}`,
       type: 'hype',
       source: 'offline-engine'
     };
   } else {
-    const generator = FALLBACK_ROAST_MESSAGES[Math.floor(Math.random() * FALLBACK_ROAST_MESSAGES.length)];
+    const generator = ROAST_REALITY_CHECKS[Math.floor(Math.random() * ROAST_REALITY_CHECKS.length)];
     return {
       text: generator(missedDays),
       type: 'roast',
@@ -138,4 +208,3 @@ export const generateAIMessage = async ({
     };
   }
 };
-

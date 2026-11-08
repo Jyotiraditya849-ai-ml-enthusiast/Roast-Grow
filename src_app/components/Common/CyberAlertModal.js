@@ -13,6 +13,7 @@ import {
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCyberNotification } from '../../context/NotificationContext';
+import { THEME } from '../../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -98,7 +99,7 @@ export const CyberAlertModal = () => {
 
   const isDestructive = currentDialog.isDestructive || currentDialog.type === 'error' || currentDialog.type === 'warning';
   const isFreeze = currentDialog.type === 'freeze';
-  const primaryColor = isDestructive ? '#ef4444' : isFreeze ? '#38bdf8' : '#f97316';
+  const primaryColor = isDestructive ? THEME.crimsonPureRed : isFreeze ? THEME.blueLight : THEME.marigold;
   const hudTag = currentDialog.hudTag || (isDestructive ? '[GATEWAY // CRITICAL_ACTION]' : isFreeze ? '[VAULT // SHIELD_REQUEST]' : '[GATEWAY // AUTHORIZATION]');
 
   return (
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   dialogCard: {
     width: '100%',
     maxWidth: Platform.OS === 'web' ? 440 : SCREEN_WIDTH - 36,
-    backgroundColor: '#090d15',
+    backgroundColor: THEME.bgCard,
     borderRadius: 16,
     borderWidth: 1.5,
     padding: 22,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import {
   View,
   Text,
@@ -10,98 +10,100 @@ import {
   Easing,
   Dimensions
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCyberNotification } from '../../context/NotificationContext';
+
+import { THEME } from '../../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const THEMES = {
   streak: {
-    primary: '#f97316',
-    glow: 'rgba(249, 115, 22, 0.5)',
-    bgDark: '#120b06',
+    primary: THEME.marigold,
+    glow: 'rgba(245, 158, 11, 0.5)',
+    bgDark: '#0e0802',
     tag: '[PROTOCOL // STREAK_ACTIVE]',
     IconLib: Ionicons,
     iconName: 'flame'
   },
   flame: {
-    primary: '#f97316',
-    glow: 'rgba(249, 115, 22, 0.5)',
-    bgDark: '#120b06',
+    primary: THEME.marigold,
+    glow: 'rgba(245, 158, 11, 0.5)',
+    bgDark: '#0e0802',
     tag: '[PROTOCOL // STREAK_ACTIVE]',
     IconLib: Ionicons,
     iconName: 'flame'
   },
   success: {
-    primary: '#22c55e',
-    glow: 'rgba(34, 197, 94, 0.5)',
-    bgDark: '#06130b',
+    primary: THEME.success,
+    glow: 'rgba(16, 185, 129, 0.5)',
+    bgDark: '#04120a',
     tag: '[CORE // DISCIPLINE_LOCKED]',
     IconLib: Ionicons,
     iconName: 'shield-checkmark'
   },
   locked: {
-    primary: '#22c55e',
-    glow: 'rgba(34, 197, 94, 0.5)',
-    bgDark: '#06130b',
+    primary: THEME.success,
+    glow: 'rgba(16, 185, 129, 0.5)',
+    bgDark: '#04120a',
     tag: '[CORE // DISCIPLINE_LOCKED]',
     IconLib: Ionicons,
     iconName: 'lock-closed'
   },
   warning: {
-    primary: '#ef4444',
-    glow: 'rgba(239, 68, 68, 0.5)',
-    bgDark: '#160809',
+    primary: THEME.crimsonPureRed,
+    glow: 'rgba(255, 0, 63, 0.5)',
+    bgDark: '#160407',
     tag: '[SYSTEM_ALERT // CRITICAL]',
     IconLib: Ionicons,
     iconName: 'warning'
   },
   alert: {
-    primary: '#ef4444',
-    glow: 'rgba(239, 68, 68, 0.5)',
-    bgDark: '#160809',
+    primary: THEME.crimsonPureRed,
+    glow: 'rgba(255, 0, 63, 0.5)',
+    bgDark: '#160407',
     tag: '[SYSTEM_ALERT // WARNING]',
     IconLib: Ionicons,
     iconName: 'warning'
   },
   error: {
-    primary: '#ef4444',
-    glow: 'rgba(239, 68, 68, 0.5)',
-    bgDark: '#160809',
+    primary: THEME.crimsonPureRed,
+    glow: 'rgba(255, 0, 63, 0.5)',
+    bgDark: '#160407',
     tag: '[ERROR // ACCESS_DENIED]',
     IconLib: Ionicons,
     iconName: 'alert-circle'
   },
   freeze: {
-    primary: '#38bdf8',
+    primary: THEME.blueLight,
     glow: 'rgba(56, 189, 248, 0.5)',
-    bgDark: '#061019',
+    bgDark: '#05101a',
     tag: '[DEFENSE // SHIELD_MATRIX]',
     IconLib: FontAwesome5,
     iconName: 'snowflake'
   },
   coin: {
-    primary: '#fbbf24',
+    primary: THEME.marigoldLight,
     glow: 'rgba(251, 191, 36, 0.5)',
-    bgDark: '#141106',
+    bgDark: '#120f04',
     tag: '[VAULT // ASSET_SECURED]',
     IconLib: FontAwesome5,
     iconName: 'coins'
   },
   push: {
-    primary: '#a855f7',
-    glow: 'rgba(168, 85, 247, 0.5)',
-    bgDark: '#100818',
+    primary: THEME.crimson,
+    glow: 'rgba(225, 29, 72, 0.5)',
+    bgDark: '#14050a',
     tag: '[NEON_COMMS // DISPATCH]',
     IconLib: Ionicons,
     iconName: 'notifications'
   },
   info: {
-    primary: '#38bdf8',
+    primary: THEME.blueLight,
     glow: 'rgba(56, 189, 248, 0.5)',
-    bgDark: '#061019',
+    bgDark: '#05101a',
     tag: '[HUD // SYSTEM_INFO]',
     IconLib: Ionicons,
     iconName: 'information-circle'
@@ -110,7 +112,8 @@ const THEMES = {
 
 export const CyberNotificationBanner = () => {
   const { currentNotification, dismissNotification } = useCyberNotification();
-  const insets = useSafeAreaInsets();
+  const insetsContext = useContext(SafeAreaInsetsContext);
+  const insets = insetsContext || { top: 0, bottom: 0, left: 0, right: 0 };
 
   const translateY = useRef(new Animated.Value(-160)).current;
   const opacity = useRef(new Animated.Value(0)).current;

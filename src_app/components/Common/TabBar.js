@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Ionicons, Feather, FontAwesome5 } from '@expo/vector-icons';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { THEME } from '../../theme';
 
-export const TabBar = ({ activeTab, onSelectTab }) => {
+export const TabBar = React.memo(({ activeTab, onSelectTab }) => {
   const tabs = [
-    { key: 'dashboard', label: 'Streak', icon: 'flame', type: 'ion' },
-    { key: 'journal', label: 'Journal', icon: 'book-open', type: 'feather' },
-    { key: 'heatmap', label: 'Activity', icon: 'grid', type: 'feather' },
-    { key: 'vault', label: 'Vault', icon: 'snowflake', type: 'fa5' }
+    { key: 'dashboard', label: 'Home', icon: 'home', type: 'feather', activeColor: THEME.marigold },
+    { key: 'journal', label: 'Journal', icon: 'book-open', type: 'feather', activeColor: THEME.blueLight },
+    { key: 'create', label: 'Create', icon: 'plus', type: 'centerFloating' },
+    { key: 'heatmap', label: 'Activity', icon: 'grid', type: 'feather', activeColor: THEME.marigoldLight },
+    { key: 'vault', label: 'Vault', icon: 'snowflake', type: 'fa5', activeColor: THEME.blueLight }
   ];
 
   const handlePress = (key) => {
@@ -22,42 +24,60 @@ export const TabBar = ({ activeTab, onSelectTab }) => {
     <View style={styles.tabContainer}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
+
+        // Elevated Center Floating (+) Button (Image 2 Replica)
+        if (tab.type === 'centerFloating') {
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                styles.centerFloatingBtn,
+                isActive && styles.centerFloatingBtnActive
+              ]}
+              onPress={() => handlePress(tab.key)}
+              activeOpacity={0.8}
+            >
+              <Feather name="plus" size={26} color="#ffffff" />
+            </TouchableOpacity>
+          );
+        }
+
+        const activeColor = tab.activeColor || THEME.marigold;
+
         return (
           <TouchableOpacity
             key={tab.key}
             style={[
               styles.tabButton,
-              isActive && (tab.key === 'vault' ? styles.tabButtonActiveBlue : styles.tabButtonActiveOrange)
+              isActive && {
+                backgroundColor: tab.key === 'dashboard' || tab.key === 'heatmap' ? THEME.marigoldBg : THEME.blueBg,
+                borderColor: tab.key === 'dashboard' || tab.key === 'heatmap' ? THEME.marigoldBorder : THEME.blueBorder,
+                borderWidth: 1
+              }
             ]}
             onPress={() => handlePress(tab.key)}
             activeOpacity={0.75}
           >
-            {tab.type === 'ion' && (
-              <Ionicons
-                name={tab.icon}
-                size={isActive ? 21 : 19}
-                color={isActive ? '#f97316' : '#6e7681'}
-              />
-            )}
             {tab.type === 'feather' && (
               <Feather
                 name={tab.icon}
-                size={isActive ? 21 : 19}
-                color={isActive ? '#f97316' : '#6e7681'}
+                size={isActive ? 20 : 18}
+                color={isActive ? activeColor : THEME.textMuted}
               />
             )}
             {tab.type === 'fa5' && (
               <FontAwesome5
                 name={tab.icon}
-                size={isActive ? 19 : 17}
-                color={isActive ? '#38bdf8' : '#6e7681'}
+                size={isActive ? 18 : 16}
+                color={isActive ? activeColor : THEME.textMuted}
               />
             )}
             <Text
               style={[
                 styles.tabLabel,
-                isActive && (tab.key === 'vault' ? styles.tabLabelBlue : styles.tabLabelActive)
+                isActive && { color: activeColor, fontWeight: '800' }
               ]}
+              numberOfLines={1}
             >
               {tab.label}
             </Text>
@@ -66,17 +86,17 @@ export const TabBar = ({ activeTab, onSelectTab }) => {
       })}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#0a0e14',
+    backgroundColor: THEME.bgApp,
     borderTopWidth: 1.5,
-    borderColor: '#1e2430',
-    paddingVertical: 8,
+    borderColor: THEME.borderSubtle,
+    paddingVertical: 6,
     paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
     justifyContent: 'space-around',
     alignItems: 'center'
   },
@@ -85,32 +105,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     paddingVertical: 6,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     borderRadius: 14,
     gap: 3
   },
-  tabButtonActiveOrange: {
-    backgroundColor: 'rgba(249, 115, 22, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(249, 115, 22, 0.35)'
+  centerFloatingBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: THEME.crimson,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -18,
+    borderWidth: 2.5,
+    borderColor: THEME.marigold,
+    shadowColor: THEME.marigold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 8
   },
-  tabButtonActiveBlue: {
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.35)'
+  centerFloatingBtnActive: {
+    backgroundColor: THEME.crimsonDeep,
+    borderColor: THEME.blueLight,
+    shadowColor: THEME.blueLight,
+    shadowOpacity: 0.85
   },
   tabLabel: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#6e7681'
-  },
-  tabLabelActive: {
-    color: '#f97316',
-    fontWeight: '800'
-  },
-  tabLabelBlue: {
-    color: '#38bdf8',
-    fontWeight: '800'
+    color: THEME.textMuted
   }
 });
 

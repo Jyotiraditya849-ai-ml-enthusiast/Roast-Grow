@@ -8,25 +8,35 @@ import {
 } from 'react-native';
 import { getLocalDateString } from '../../storage/asyncStorage';
 
+import { THEME } from '../../theme';
+
 const CELL_SIZE = 12;
 const CELL_GAP = 3;
 const WEEKS_COUNT = 52;
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Dark Mode Color Palette
-const COLOR_EMPTY = '#21262d';
-const COLOR_FUTURE = '#0d1117';
-const COLOR_FROZEN = '#38bdf8';
+// Cyberpunk Heatmap Color Palette: Deep Blue -> Marigold
+const COLOR_EMPTY = '#0c1424';
+const COLOR_FUTURE = '#050811';
+const COLOR_FROZEN = THEME.blueLight;
 const COLOR_SCALE = [
-  '#0e4429', // 1 - 25% completed
-  '#006d32', // 26 - 50% completed
-  '#26a641', // 51 - 75% completed
-  '#39d353'  // 76 - 100% completed
+  '#0c4a6e', // 1 - 25% completed (Deep Cyber Navy)
+  '#0284c7', // 26 - 50% completed (Electric Cyber Blue)
+  '#d97706', // 51 - 75% completed (Deep Warm Marigold)
+  '#f59e0b'  // 76 - 100% completed (Radiant Gold Marigold)
 ];
 
-export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => {
+export const ActivityHeatmap = React.memo(({
+  history = {},
+  challenge = {},
+  startDate,
+  viewMode: controlledViewMode,
+  onToggleViewMode
+}) => {
   // Mode: 'forward' (starts on user login/start date) vs 'retrospective' (past 365 days)
-  const [viewMode, setViewMode] = useState('forward');
+  const [internalViewMode, setInternalViewMode] = useState('forward');
+  const viewMode = controlledViewMode !== undefined ? controlledViewMode : internalViewMode;
+  const setViewMode = onToggleViewMode || setInternalViewMode;
   const [selectedDay, setSelectedDay] = useState(null);
 
   const todayStr = useMemo(() => getLocalDateString(), []);
@@ -37,68 +47,101 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
     return (d + 6) % 7;
   }, []);
 
-  // Compute 52-week grid based on mode
+  // Compute 52-week grid based on mode with exact day alignment
   const { weeks, monthLabels, totalActiveDays, challengeDayCount } = useMemo(() => {
     const today = new Date();
-    const currentDayOfWeek = today.getDay(); // 0 = Sunday
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+    const todayDate = today.getDate();
 
-    let baseStart = new Date(today);
+    const todayStartOfDay = new Date(todayYear, todayMonth, todayDate, 0, 0, 0, 0);
+    const todayEndOfDay = new Date(todayYear, todayMonth, todayDate, 23, 59, 59, 999);
+
+    // Row index: 0 = Mon, 1 = Tue, 2 = Wed, 3 = Thu, 4 = Fri, 5 = Sat, 6 = Sun
+    const getRow = (d) => (d.getDay() + 6) % 7;
+
+    let gridStartDate;
 
     if (viewMode === 'forward') {
-      // START FROM USER'S LOGIN / START DATE
+      let start = todayStartOfDay;
       if (startDate) {
         const [sy, sm, sd] = startDate.split('-').map(Number);
-        baseStart = new Date(sy, sm - 1, sd);
+        if (!isNaN(sy) && !isNaN(sm) && !isNaN(sd)) {
+          start = new Date(sy, sm - 1, sd, 0, 0, 0, 0);
+        }
       }
-      // Align start to the Sunday of that start week so days line up Mon-Sun cleanly
-      const startDayOfWeek = baseStart.getDay();
-      baseStart.setDate(baseStart.getDate() - startDayOfWeek);
+      const startRow = getRow(start);
+      // Align grid start to the Monday of that start week
+      gridStartDate = new Date(start.getFullYear(), start.getMonth(), start.getDate() - startRow, 0, 0, 0, 0);
     } else {
-      // Retrospective: 52 weeks in the past up to today
-      baseStart.setDate(today.getDate() - (52 * 7) - currentDayOfWeek);
+      // Retrospective: 52 weeks ending on current week
+      const todayRow = getRow(todayStartOfDay);
+      const currentWeekMonday = new Date(todayYear, todayMonth, todayDate - todayRow, 0, 0, 0, 0);
+      gridStartDate = new Date(currentWeekMonday.getFullYear(), currentWeekMonday.getMonth(), currentWeekMonday.getDate() - (51 * 7), 0, 0, 0, 0);
     }
 
     const generatedWeeks = [];
     const months = [];
-    let currentMonth = -1;
+    let lastLabeledMonth = -1;
+    let lastLabeledWeekIndex = -999;
     let activeCounter = 0;
     let totalChallengeDays = 0;
-
-    let cursor = new Date(baseStart);
 
     for (let w = 0; w < WEEKS_COUNT; w++) {
       const weekDays = [];
       for (let d = 0; d < 7; d++) {
-        cursor.setDate(cursor.getDate() + 1);
-        const dateStr = getLocalDateString(cursor);
+        const dayOffset = w * 7 + d;
+        const cellDate = new Date(
+          gridStartDate.getFullYear(),
+          gridStartDate.getMonth(),
+          gridStartDate.getDate() + dayOffset,
+          0, 0, 0, 0
+        );
+        const dateStr = getLocalDateString(cellDate);
         const entry = history[dateStr];
         const isToday = dateStr === todayStr;
-        const isFuture = cursor > today && !isToday;
+        const isFuture = cellDate.getTime() > todayEndOfDay.getTime();
 
         totalChallengeDays++;
 
-        if (entry?.completed) {
+        // Guaranteed check-in detection: either recorded in history or challenge verified for today
+        const isCompleted = Boolean(
+          entry?.completed || (isToday && challenge?.lastActiveDate === todayStr)
+        );
+
+        if (isCompleted) {
           activeCounter++;
         }
 
         weekDays.push({
           dateStr,
-          date: new Date(cursor),
+          date: cellDate,
           entry,
           isToday,
           isFuture,
+          isCompleted,
           dayIndex: totalChallengeDays
         });
 
-        // Month labels along top
+        // Month labels along top with guaranteed 3-week spacing (prevents "OctNov" overlap)
         if (d === 0) {
-          const m = cursor.getMonth();
-          if (m !== currentMonth) {
-            months.push({
-              weekIndex: w,
-              name: cursor.toLocaleString('default', { month: 'short' })
-            });
-            currentMonth = m;
+          const m = cellDate.getMonth();
+          if (m !== lastLabeledMonth) {
+            if (lastLabeledWeekIndex === -999 || (w - lastLabeledWeekIndex) >= 3) {
+              months.push({
+                weekIndex: w,
+                name: cellDate.toLocaleString('default', { month: 'short' })
+              });
+              lastLabeledMonth = m;
+              lastLabeledWeekIndex = w;
+            } else if (months.length === 1 && (w - lastLabeledWeekIndex) < 3) {
+              months[0] = {
+                weekIndex: w,
+                name: cellDate.toLocaleString('default', { month: 'short' })
+              };
+              lastLabeledMonth = m;
+              lastLabeledWeekIndex = w;
+            }
           }
         }
       }
@@ -111,21 +154,25 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
       totalActiveDays: activeCounter,
       challengeDayCount: totalChallengeDays
     };
-  }, [history, startDate, viewMode, todayStr]);
+  }, [history, challenge, startDate, viewMode, todayStr]);
 
-  // Determine cell color
+  // Determine cell color: Radiant Gold Marigold when checked in, Pure Blood Red / Wine when pending
   const getCellColor = (day) => {
-    if (day.entry?.completed) {
-      if (day.entry.freezeUsed) return COLOR_FROZEN;
-      const ratio = day.entry.ratio || 0.5;
+    const isCompleted = Boolean(
+      day.isCompleted || day.entry?.completed || (day.isToday && challenge?.lastActiveDate === todayStr)
+    );
+
+    if (isCompleted) {
+      if (day.entry?.freezeUsed) return COLOR_FROZEN;
+      const ratio = day.entry?.ratio || 1.0;
       if (ratio <= 0.25) return COLOR_SCALE[0];
       if (ratio <= 0.5) return COLOR_SCALE[1];
       if (ratio <= 0.75) return COLOR_SCALE[2];
-      return COLOR_SCALE[3];
+      return COLOR_SCALE[3]; // Radiant Gold Marigold #f59e0b
     }
 
     if (day.isToday) {
-      return '#261b11'; // Warm accent for today pending check-in
+      return '#2a0911'; // Deep crimson wine accent for today pending check-in
     }
 
     if (day.isFuture) {
@@ -225,6 +272,8 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
                 <View key={wIdx} style={styles.weekCol}>
                   {week.map((day, dIdx) => {
                     const isSelected = selectedDay?.dateStr === day.dateStr;
+                    const isTodaySecured = day.isCompleted || (day.isToday && challenge?.lastActiveDate === todayStr);
+
                     return (
                       <TouchableOpacity
                         key={dIdx}
@@ -232,7 +281,7 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
                           styles.cell,
                           { backgroundColor: getCellColor(day) },
                           day.isFuture && styles.cellFuture,
-                          day.isToday && styles.cellToday,
+                          day.isToday && (isTodaySecured ? styles.cellTodayDone : styles.cellTodayPending),
                           isSelected && styles.cellSelected
                         ]}
                         onPress={() => setSelectedDay(day)}
@@ -250,7 +299,7 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
       {/* Heatmap Legend */}
       <View style={styles.legendRow}>
         <View style={styles.todayLegend}>
-          <View style={[styles.legendCell, styles.cellToday]} />
+          <View style={[styles.legendCell, styles.cellTodayDone]} />
           <Text style={styles.legendLabel}>Today 📍</Text>
         </View>
 
@@ -285,14 +334,14 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
             </TouchableOpacity>
           </View>
 
-          {selectedDay.entry?.completed ? (
+          {(selectedDay.isCompleted || selectedDay.entry?.completed || (selectedDay.isToday && challenge?.lastActiveDate === todayStr)) ? (
             <View>
               <Text style={styles.inspectorStatus}>
-                {selectedDay.entry.freezeUsed
+                {selectedDay.entry?.freezeUsed
                   ? '❄️ Streak Protected via Freeze Coin'
-                  : `✅ Completed (${Math.round((selectedDay.entry.ratio || 1) * 100)}% habits)`}
+                  : `✅ Completed (Day ${selectedDay.dayIndex} of 365) • Streak Secured 🔥`}
               </Text>
-              {selectedDay.entry.completedHabits && (
+              {selectedDay.entry?.completedHabits && (
                 <Text style={styles.inspectorHabits}>
                   {selectedDay.entry.completedHabits.join(' • ')}
                 </Text>
@@ -300,7 +349,7 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
             </View>
           ) : selectedDay.isToday ? (
             <Text style={styles.inspectorTodayInfo}>
-              🔥 Today is active! Check off your micro-habits on the Streak tab and lock in your check-in.
+              🔥 Today is active! Check off your micro-habits and complete check-in on the Home tab to lock in Radiant Gold!
             </Text>
           ) : selectedDay.isFuture ? (
             <Text style={styles.inspectorFuture}>
@@ -313,20 +362,20 @@ export const ActivityHeatmap = ({ history = {}, challenge = {}, startDate }) => 
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
     padding: 16,
     marginHorizontal: 12,
     marginVertical: 10,
     borderWidth: 1.5,
-    borderColor: 'rgba(34, 197, 94, 0.3)',
-    shadowColor: '#22c55e',
+    borderColor: THEME.borderMedium,
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 4
   },
@@ -343,40 +392,40 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#f0f6fc'
+    color: THEME.textWhite
   },
   subtitle: {
     fontSize: 12,
-    color: '#8b949e',
+    color: THEME.textMuted,
     marginTop: 2
   },
   statPill: {
-    backgroundColor: '#0d1117',
+    backgroundColor: THEME.bgInput,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#238636'
+    borderWidth: 1.2,
+    borderColor: THEME.marigold
   },
   statPillNumber: {
-    color: '#39d353',
+    color: THEME.marigoldLight,
     fontWeight: '800',
     fontSize: 14
   },
   statPillLabel: {
-    color: '#8b949e',
+    color: THEME.textMuted,
     fontSize: 9,
     fontWeight: '600'
   },
   modeToggle: {
     flexDirection: 'row',
-    backgroundColor: '#0d1117',
+    backgroundColor: THEME.bgInput,
     borderRadius: 10,
     padding: 3,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#21262d'
+    borderColor: THEME.borderMedium
   },
   modeToggleBtn: {
     flex: 1,
@@ -385,15 +434,17 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   modeToggleBtnActive: {
-    backgroundColor: '#21262d'
+    backgroundColor: THEME.bgCardElevated,
+    borderColor: THEME.borderHighlight,
+    borderWidth: 1
   },
   modeToggleText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#6e7681'
+    color: THEME.textMuted
   },
   modeToggleTextActive: {
-    color: '#f97316'
+    color: THEME.marigoldLight
   },
   gridWrapper: {
     flexDirection: 'row'
@@ -421,7 +472,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false
   },
   dayLabelTextToday: {
-    color: '#f97316',
+    color: THEME.marigoldLight,
     fontWeight: '900'
   },
   scrollArea: {
@@ -452,11 +503,29 @@ const styles = StyleSheet.create({
   },
   cellFuture: {
     borderWidth: 1,
-    borderColor: '#21262d'
+    borderColor: '#182338'
   },
   cellToday: {
-    borderWidth: 1.5,
-    borderColor: '#f97316'
+    borderWidth: 1.8,
+    borderColor: '#fbbf24'
+  },
+  cellTodayDone: {
+    borderWidth: 2,
+    borderColor: '#fbbf24',
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 5,
+    elevation: 4
+  },
+  cellTodayPending: {
+    borderWidth: 2,
+    borderColor: '#ff003f',
+    shadowColor: '#ff003f',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 3
   },
   cellSelected: {
     borderWidth: 2,

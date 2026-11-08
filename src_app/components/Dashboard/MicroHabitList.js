@@ -21,6 +21,8 @@ export const MicroHabitList = ({
 
   const completedCount = habits.filter((h) => h.completedToday).length;
   const totalCount = habits.length;
+  const isAllDone = totalCount > 0 && completedCount >= totalCount;
+  const isLocked = completedCount >= Math.min(3, totalCount);
 
   const handleToggle = (id) => {
     if (Platform.OS !== 'web') {
@@ -52,14 +54,16 @@ export const MicroHabitList = ({
           <Text style={styles.subtitle}>Micro-habit stacking for maximum consistency</Text>
         </View>
 
-        <View style={[styles.progressPill, completedCount >= 3 && styles.progressPillLocked]}>
+        <View style={[styles.progressPill, isLocked && styles.progressPillLocked]}>
           <Ionicons
-            name={completedCount >= 3 ? 'shield-checkmark' : 'flame'}
+            name={isAllDone ? 'shield-checkmark' : isLocked ? 'checkmark-circle' : 'flame'}
             size={13}
-            color={completedCount >= 3 ? '#22c55e' : '#f97316'}
+            color={isLocked ? '#22c55e' : '#f97316'}
           />
-          <Text style={[styles.progressText, completedCount >= 3 && styles.progressTextLocked]}>
-            {completedCount >= 3 ? `${completedCount}/3 Done ✓` : `${completedCount}/3 to Lock`}
+          <Text style={[styles.progressText, isLocked && styles.progressTextLocked]}>
+            {isAllDone
+              ? `${completedCount}/${totalCount} Done ✓`
+              : `${completedCount}/${totalCount} to Lock`}
           </Text>
         </View>
       </View>
@@ -92,13 +96,20 @@ export const MicroHabitList = ({
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => onDeleteHabit(habit.id)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Feather name="trash-2" size={14} color="#6e7681" />
-            </TouchableOpacity>
+            {habit.isNonEditable || habit.id?.startsWith('core_') ? (
+              <View style={styles.coreLockBadge}>
+                <Ionicons name="lock-closed" size={11} color="#fbbf24" />
+                <Text style={styles.coreLockText}>CORE</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => onDeleteHabit(habit.id)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Feather name="trash-2" size={14} color="#6e7681" />
+              </TouchableOpacity>
+            )}
           </View>
         );
       })}
@@ -340,6 +351,23 @@ const styles = StyleSheet.create({
     color: '#8b949e',
     fontWeight: '600',
     fontSize: 12
+  },
+  coreLockBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.35)'
+  },
+  coreLockText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#fbbf24',
+    letterSpacing: 0.5
   }
 });
 

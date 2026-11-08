@@ -17,8 +17,9 @@ import { useCyberNotification } from '../context/NotificationContext';
 import { FreezeCoinStore } from '../components/Store/FreezeCoinStore';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { THEME } from '../theme';
 
-export const SettingsScreen = () => {
+export const SettingsScreen = React.memo(() => {
   const { showCyberNotification, showCyberDialog } = useCyberNotification();
   const {
     challenge,
@@ -544,28 +545,28 @@ export const SettingsScreen = () => {
       </Modal>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#090d14'
+    backgroundColor: THEME.bgApp
   },
   scrollContent: {
     paddingBottom: 40
   },
   accountCard: {
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
     padding: 18,
     marginHorizontal: 12,
     marginVertical: 12,
     borderWidth: 1.5,
-    borderColor: 'rgba(249, 115, 22, 0.35)',
+    borderColor: THEME.borderMedium,
     overflow: 'hidden',
-    shadowColor: '#ea580c',
+    shadowColor: THEME.blue,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 4
   },
@@ -579,9 +580,9 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 16,
-    backgroundColor: '#0d1117',
+    backgroundColor: THEME.bgInput,
     borderWidth: 1.5,
-    borderColor: '#f97316',
+    borderColor: THEME.blueLight,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -594,33 +595,33 @@ const styles = StyleSheet.create({
   accountName: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#f0f6fc'
+    color: THEME.textWhite
   },
   accountHandle: {
     fontSize: 13,
-    color: '#f97316',
+    color: THEME.marigoldLight,
     fontWeight: '700'
   },
   accountDate: {
     fontSize: 11,
-    color: '#8b949e',
+    color: THEME.textMuted,
     marginTop: 2
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#200e12',
-    borderWidth: 1,
-    borderColor: '#7f1d1d',
+    backgroundColor: 'rgba(255, 0, 63, 0.12)',
+    borderWidth: 1.5,
+    borderColor: THEME.crimsonPureRed,
     paddingVertical: 10,
     borderRadius: 12,
     gap: 8
   },
   logoutButtonText: {
-    color: '#ef4444',
+    color: THEME.crimsonPureRed,
     fontSize: 13,
-    fontWeight: '700'
+    fontWeight: '800'
   },
   switchRow: {
     flexDirection: 'row',

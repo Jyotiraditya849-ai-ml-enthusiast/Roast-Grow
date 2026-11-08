@@ -9,6 +9,7 @@ import {
 import { FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCyberNotification } from '../../context/NotificationContext';
+import { THEME } from '../../theme';
 
 export const FreezeCoinStore = ({
   freezeCoins,
@@ -71,7 +72,7 @@ export const FreezeCoinStore = ({
       <View style={styles.vaultCard}>
         <View style={styles.balanceRow}>
           <View style={styles.iconCircle}>
-            <FontAwesome5 name="snowflake" size={28} color="#38bdf8" />
+            <FontAwesome5 name="snowflake" size={28} color={THEME.blueLight} />
           </View>
           <View>
             <Text style={styles.balanceNumber}>{freezeCoins}</Text>
@@ -97,7 +98,7 @@ export const FreezeCoinStore = ({
         <Text style={styles.rulesTitle}>Gamification Protocol</Text>
 
         <View style={styles.ruleItem}>
-          <Ionicons name="flame" size={18} color="#f97316" style={styles.ruleIcon} />
+          <Ionicons name="flame" size={18} color={THEME.marigold} style={styles.ruleIcon} />
           <View style={styles.ruleTextGroup}>
             <Text style={styles.ruleHeading}>Earn 1 Coin per 10 Days</Text>
             <Text style={styles.ruleDescription}>
@@ -107,7 +108,7 @@ export const FreezeCoinStore = ({
         </View>
 
         <View style={styles.ruleItem}>
-          <FontAwesome5 name="shield-alt" size={16} color="#38bdf8" style={styles.ruleIcon} />
+          <FontAwesome5 name="shield-alt" size={16} color={THEME.blueLight} style={styles.ruleIcon} />
           <View style={styles.ruleTextGroup}>
             <Text style={styles.ruleHeading}>Automatic Missed-Day Protection</Text>
             <Text style={styles.ruleDescription}>
@@ -117,7 +118,7 @@ export const FreezeCoinStore = ({
         </View>
 
         <View style={styles.ruleItem}>
-          <Ionicons name="skull" size={18} color="#ef4444" style={styles.ruleIcon} />
+          <Ionicons name="skull" size={18} color={THEME.crimsonPureRed} style={styles.ruleIcon} />
           <View style={styles.ruleTextGroup}>
             <Text style={styles.ruleHeading}>Strict Zero-Tolerance Reset</Text>
             <Text style={styles.ruleDescription}>
@@ -136,13 +137,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   vaultCard: {
-    backgroundColor: '#0a1622',
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(56, 189, 248, 0.45)',
+    borderColor: THEME.blueBorder,
     marginBottom: 16,
-    shadowColor: '#38bdf8',
+    shadowColor: THEME.blue,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 14,
@@ -158,42 +159,43 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: THEME.blueBg,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#38bdf8'
+    borderColor: THEME.blue
   },
   balanceNumber: {
     fontSize: 36,
     fontWeight: '900',
-    color: '#38bdf8'
+    color: THEME.blueLight,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
   },
   balanceLabel: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#94a3b8',
+    color: THEME.textMuted,
     letterSpacing: 1.2
   },
   activateButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0284c7',
+    backgroundColor: THEME.crimson,
     paddingVertical: 15,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#38bdf8',
+    borderWidth: 1.5,
+    borderColor: THEME.marigold,
     gap: 8,
-    shadowColor: '#38bdf8',
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.45,
     shadowRadius: 10,
     elevation: 4
   },
   disabledButton: {
-    backgroundColor: '#16202c',
-    borderColor: '#1e293b',
+    backgroundColor: THEME.bgInput,
+    borderColor: THEME.borderMedium,
     opacity: 0.6,
     shadowOpacity: 0
   },
@@ -204,16 +206,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3
   },
   rulesCard: {
-    backgroundColor: '#111620',
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
     padding: 18,
-    borderWidth: 1,
-    borderColor: '#1e2636'
+    borderWidth: 1.5,
+    borderColor: THEME.borderMedium
   },
   rulesTitle: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#f8fafc',
+    color: THEME.textWhite,
     letterSpacing: -0.2,
     marginBottom: 16
   },
@@ -232,12 +234,12 @@ const styles = StyleSheet.create({
   ruleHeading: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#f0f6fc',
+    color: THEME.textWhite,
     marginBottom: 2
   },
   ruleDescription: {
     fontSize: 12,
-    color: '#8b949e',
+    color: THEME.textMuted,
     lineHeight: 18
   }
 });

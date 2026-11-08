@@ -1,20 +1,23 @@
-import React, { useState, useEffect, Component } from 'react';
-import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, Component } from 'react';
+import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaInsetsContext, initialWindowMetrics } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { NotificationProvider } from './src_app/context/NotificationContext';
 import { CyberNotificationBanner } from './src_app/components/Common/CyberNotificationBanner';
 import { CyberAlertModal } from './src_app/components/Common/CyberAlertModal';
 import { AuthProvider, useAuth } from './src_app/context/AuthContext';
 import { StreakProvider, useStreak } from './src_app/context/StreakContext';
+import { FocusTimerProvider } from './src_app/context/FocusTimerContext';
 import { Header } from './src_app/components/Common/Header';
 import { TabBar } from './src_app/components/Common/TabBar';
 import { AuthScreen } from './src_app/screens/AuthScreen';
 import { DashboardScreen } from './src_app/screens/DashboardScreen';
+import { CreateMissionScreen } from './src_app/screens/CreateMissionScreen';
 import { JournalScreen } from './src_app/screens/JournalScreen';
 import { AnalyticsScreen } from './src_app/screens/AnalyticsScreen';
 import { SettingsScreen } from './src_app/screens/SettingsScreen';
+import { THEME } from './src_app/theme';
 
 // Error Boundary to prevent any blank white screen
 class GlobalErrorBoundary extends Component {
@@ -58,14 +61,25 @@ class GlobalErrorBoundary extends Component {
   }
 }
 
+const { width: WIN_WIDTH, height: WIN_HEIGHT } = Dimensions.get('window');
+
 const initialMetrics = {
-  frame: { x: 0, y: 0, width: 0, height: 0 },
+  frame: {
+    x: 0,
+    y: 0,
+    width: WIN_WIDTH || 420,
+    height: WIN_HEIGHT || 900
+  },
   insets: { top: 0, left: 0, right: 0, bottom: 0 }
 };
 
 const MainNavigator = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { challenge } = useStreak();
+
+  const handleSelectTab = useCallback((tab) => {
+    setActiveTab(tab);
+  }, []);
 
   return (
     <View style={styles.webWrapper}>
@@ -77,15 +91,31 @@ const MainNavigator = () => {
         />
 
         <View style={styles.screenContainer}>
-          {activeTab === 'dashboard' && (
-            <DashboardScreen onNavigateToVault={() => setActiveTab('vault')} />
-          )}
-          {activeTab === 'journal' && <JournalScreen />}
-          {activeTab === 'heatmap' && <AnalyticsScreen />}
-          {activeTab === 'vault' && <SettingsScreen />}
+          <View style={[styles.screenTabWrapper, activeTab !== 'dashboard' && styles.screenTabHidden]}>
+            <DashboardScreen
+              onNavigateToVault={() => handleSelectTab('vault')}
+              onNavigateToCreate={() => handleSelectTab('create')}
+            />
+          </View>
+
+          <View style={[styles.screenTabWrapper, activeTab !== 'journal' && styles.screenTabHidden]}>
+            <JournalScreen />
+          </View>
+
+          <View style={[styles.screenTabWrapper, activeTab !== 'create' && styles.screenTabHidden]}>
+            <CreateMissionScreen onNavigateToHome={() => handleSelectTab('dashboard')} />
+          </View>
+
+          <View style={[styles.screenTabWrapper, activeTab !== 'heatmap' && styles.screenTabHidden]}>
+            <AnalyticsScreen />
+          </View>
+
+          <View style={[styles.screenTabWrapper, activeTab !== 'vault' && styles.screenTabHidden]}>
+            <SettingsScreen />
+          </View>
         </View>
 
-        <TabBar activeTab={activeTab} onSelectTab={setActiveTab} />
+        <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
       </View>
     </View>
   );
@@ -97,7 +127,7 @@ const RootRouter = () => {
   if (isAuthLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#f97316" />
+        <ActivityIndicator size="large" color={THEME.marigold} />
         <Text style={styles.loadingText}>Loading Challenger ID...</Text>
       </View>
     );
@@ -116,17 +146,44 @@ const RootRouter = () => {
 
   return (
     <StreakProvider>
-      <MainNavigator />
+      <FocusTimerProvider>
+        <MainNavigator />
+      </FocusTimerProvider>
     </StreakProvider>
+  );
+};
+
+const SafeAppWrapper = ({ children }) => {
+  if (Platform.OS === 'web') {
+    return (
+      <SafeAreaInsetsContext.Provider value={{ top: 0, bottom: 0, left: 0, right: 0 }}>
+        <View style={styles.safeArea}>
+          {children}
+        </View>
+      </SafeAreaInsetsContext.Provider>
+    );
+  }
+  return (
+    <SafeAreaProvider initialMetrics={initialMetrics} style={styles.safeArea}>
+      {children}
+    </SafeAreaProvider>
   );
 };
 
 export default function App() {
   useEffect(() => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.body.style.backgroundColor = '#05080c';
+      document.body.style.backgroundColor = THEME.bgApp;
       document.body.style.margin = '0';
       document.body.style.padding = '0';
+      document.body.style.height = '100%';
+      document.documentElement.style.height = '100%';
+      const rootEl = document.getElementById('root');
+      if (rootEl) {
+        rootEl.style.height = '100%';
+        rootEl.style.display = 'flex';
+        rootEl.style.flexDirection = 'column';
+      }
     }
 
     if (Platform.OS !== 'web') {
@@ -138,8 +195,8 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics} style={styles.safeArea}>
-      <GlobalErrorBoundary>
+    <GlobalErrorBoundary>
+      <SafeAppWrapper>
         <NotificationProvider>
           <AuthProvider>
             <RootRouter />
@@ -147,54 +204,68 @@ export default function App() {
           <CyberNotificationBanner />
           <CyberAlertModal />
         </NotificationProvider>
-      </GlobalErrorBoundary>
-    </SafeAreaProvider>
+      </SafeAppWrapper>
+    </GlobalErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#05080c'
+    backgroundColor: THEME.bgApp,
+    height: Platform.OS === 'web' ? '100%' : undefined
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#05080c',
+    backgroundColor: THEME.bgApp,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
     minHeight: Platform.OS === 'web' ? '100vh' : '100%'
   },
   loadingText: {
-    color: '#8b949e',
+    color: THEME.marigoldLight,
     fontSize: 13,
-    fontWeight: '700'
+    fontWeight: '700',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    letterSpacing: 0.5
   },
   webWrapper: {
     flex: 1,
-    backgroundColor: '#05080c',
+    backgroundColor: THEME.bgApp,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     width: '100%',
+    height: Platform.OS === 'web' ? '100%' : undefined,
     minHeight: Platform.OS === 'web' ? '100vh' : '100%'
   },
   appContainer: {
     flex: 1,
-    backgroundColor: '#090d14',
+    backgroundColor: THEME.bgApp,
     width: '100%',
     maxWidth: Platform.OS === 'web' ? 520 : '100%',
     borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
     borderRightWidth: Platform.OS === 'web' ? 1 : 0,
-    borderColor: '#1e2636',
-    minHeight: Platform.OS === 'web' ? '100vh' : '100%'
+    borderColor: THEME.borderSubtle,
+    height: '100%',
+    minHeight: Platform.OS === 'web' ? '100vh' : '100%',
+    alignSelf: 'center'
   },
   screenContainer: {
     flex: 1,
     width: '100%'
   },
+  screenTabWrapper: {
+    flex: 1,
+    width: '100%',
+    height: '100%'
+  },
+  screenTabHidden: {
+    display: 'none'
+  },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#161b22',
+    backgroundColor: '#0a0507',
     padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -203,7 +274,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#ef4444',
+    color: THEME.crimsonPureRed,
     marginBottom: 10
   },
   errorMessage: {
@@ -214,22 +285,26 @@ const styles = StyleSheet.create({
   },
   errorStackBox: {
     maxHeight: 180,
-    backgroundColor: '#0d1117',
+    backgroundColor: '#050304',
     padding: 10,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 0, 63, 0.3)',
     width: '100%',
     marginBottom: 16
   },
   errorStackText: {
-    color: '#8b949e',
+    color: '#fca5a5',
     fontSize: 11,
     fontFamily: 'monospace'
   },
   retryBtn: {
-    backgroundColor: '#238636',
+    backgroundColor: THEME.crimsonDeep,
     paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 8
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: THEME.crimson
   },
   retryBtnText: {
     color: '#ffffff',

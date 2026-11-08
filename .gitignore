@@ -8,8 +8,8 @@ yarn-debug.*
 yarn-error.*
 
 # Native generated
-android/
-ios/
+/android/
+/ios/
 
 # Keystores & keys
 *.jks

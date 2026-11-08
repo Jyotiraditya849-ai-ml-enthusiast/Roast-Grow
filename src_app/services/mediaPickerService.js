@@ -4,10 +4,42 @@ import * as ImagePicker from 'expo-image-picker';
 import { showGlobalCyberNotification } from '../context/NotificationContext';
 
 /**
+ * Converts a temporary blob: URI or file into a permanent Base64 Data URL.
+ * Base64 Data URLs live directly inside AsyncStorage / localStorage and
+ * NEVER disappear when the web dev server restarts or browser refreshes.
+ */
+export const ensurePersistentBase64 = async (uri, mimeType = 'image/jpeg') => {
+  if (!uri) return uri;
+  // If already a persistent base64 data URL, return immediately
+  if (uri.startsWith('data:')) return uri;
+
+  // On Web or blob URLs:
+  if (Platform.OS === 'web' || uri.startsWith('blob:')) {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve(typeof reader.result === 'string' ? reader.result : uri);
+        };
+        reader.onerror = () => {
+          resolve(uri);
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn('Could not convert blob to persistent data URL:', e);
+      return uri;
+    }
+  }
+  return uri;
+};
+
+/**
  * Service to handle picking full roadmap files (PDF, images, documents)
  * and camera captures across iOS, Android, and Web.
  */
-
 export const pickRoadmapFileOrPhoto = async () => {
   try {
     // Primary: DocumentPicker for picking PDFs, images, or documents
@@ -23,12 +55,14 @@ export const pickRoadmapFileOrPhoto = async () => {
         asset.mimeType?.includes('pdf') ||
         name.toLowerCase().endsWith('.pdf')
       );
+      const mime = asset.mimeType || (isPdf ? 'application/pdf' : 'image/jpeg');
+      const persistentUri = await ensurePersistentBase64(asset.uri, mime);
 
       return {
-        uri: asset.uri,
+        uri: persistentUri,
         name,
         type: isPdf ? 'pdf' : 'image',
-        mimeType: asset.mimeType || (isPdf ? 'application/pdf' : 'image/jpeg')
+        mimeType: mime
       };
     }
     return null;
@@ -56,11 +90,13 @@ export const pickRoadmapFileOrPhoto = async () => {
 
       if (!imgResult.canceled && imgResult.assets && imgResult.assets.length > 0) {
         const asset = imgResult.assets[0];
+        const mime = 'image/jpeg';
+        const persistentUri = await ensurePersistentBase64(asset.uri, mime);
         return {
-          uri: asset.uri,
+          uri: persistentUri,
           name: asset.fileName || 'roadmap_photo.jpg',
           type: 'image',
-          mimeType: 'image/jpeg'
+          mimeType: mime
         };
       }
     } catch (e) {
@@ -98,11 +134,13 @@ export const takeRoadmapPhoto = async () => {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
+      const mime = 'image/jpeg';
+      const persistentUri = await ensurePersistentBase64(asset.uri, mime);
       return {
-        uri: asset.uri,
+        uri: persistentUri,
         name: asset.fileName || 'roadmap_camera_photo.jpg',
         type: 'image',
-        mimeType: 'image/jpeg'
+        mimeType: mime
       };
     }
     return null;

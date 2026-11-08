@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { THEME } from '../../theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const CONFETTI_COLORS = ['#f97316', '#eab308', '#38bdf8', '#22c55e', '#a855f7', '#ec4899', '#ffffff'];
+const CONFETTI_COLORS = [THEME.marigold, THEME.crimson, THEME.blueLight, THEME.marigoldLight, THEME.blue, '#ffffff'];
 const CONFETTI_COUNT = 36;
 
 export const StreakCelebrationModal = ({
@@ -162,7 +163,7 @@ export const StreakCelebrationModal = ({
             ]}
           >
             <View style={styles.glowRing} />
-            <Ionicons name="flame" size={76} color="#f97316" />
+            <Ionicons name="flame" size={76} color={THEME.marigold} />
           </Animated.View>
 
           {/* Celebration Header */}
@@ -248,13 +249,13 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#161b22',
+    backgroundColor: THEME.bgCard,
     borderRadius: 24,
     padding: 26,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#f97316',
-    shadowColor: '#f97316',
+    borderColor: THEME.marigold,
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
     shadowRadius: 25,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: '#2b1407',
+    backgroundColor: THEME.marigoldBg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -276,12 +277,12 @@ const styles = StyleSheet.create({
     height: 124,
     borderRadius: 62,
     borderWidth: 2,
-    borderColor: 'rgba(249, 115, 22, 0.4)'
+    borderColor: THEME.marigoldBorder
   },
   badgeLabel: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#f97316',
+    color: THEME.marigoldLight,
     letterSpacing: 1.5,
     marginBottom: 4
   },
@@ -360,15 +361,17 @@ const styles = StyleSheet.create({
     lineHeight: 18
   },
   continueBtn: {
-    backgroundColor: '#f97316',
+    backgroundColor: THEME.crimson,
     width: '100%',
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#f97316',
+    borderWidth: 2,
+    borderColor: THEME.marigold,
+    shadowColor: THEME.marigold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
     elevation: 6
   },
   continueBtnCenturion: {

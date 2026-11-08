@@ -25,7 +25,12 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) :
             val editor = prefs.edit()
 
             if (data.hasKey("streakCount")) {
-                editor.putInt("streakCount", data.getInt("streakCount"))
+                val streakVal = when {
+                    data.getType("streakCount") == com.facebook.react.bridge.ReadableType.Number -> data.getInt("streakCount")
+                    data.getType("streakCount") == com.facebook.react.bridge.ReadableType.String -> data.getString("streakCount")?.toIntOrNull() ?: 0
+                    else -> 0
+                }
+                editor.putInt("streakCount", streakVal)
             }
             if (data.hasKey("challengeTitle")) {
                 editor.putString("challengeTitle", data.getString("challengeTitle"))
@@ -54,15 +59,21 @@ class WidgetBridgeModule(reactContext: ReactApplicationContext) :
                 editor.putInt("incompleteHabitsCount", data.getInt("incompleteHabitsCount"))
             }
 
-            editor.apply()
+            // Synchronous flush so disk has the updated data immediately before broadcast
+            editor.commit()
 
-            // Broadcast update to all active StreakWidgetProvider instances
+            // 1. Direct synchronous update call to all active widget instances
+            val widgetManager = AppWidgetManager.getInstance(context)
+            val thisWidget = ComponentName(context, StreakWidgetProvider::class.java)
+            val ids = widgetManager.getAppWidgetIds(thisWidget)
+            if (ids != null && ids.isNotEmpty()) {
+                val provider = StreakWidgetProvider()
+                provider.onUpdate(context, widgetManager, ids)
+            }
+
+            // 2. Broadcast update intent to all active StreakWidgetProvider instances
             val intent = Intent(context, StreakWidgetProvider::class.java).apply {
                 action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                val widgetManager = AppWidgetManager.getInstance(context)
-                val ids = widgetManager.getAppWidgetIds(
-                    ComponentName(context, StreakWidgetProvider::class.java)
-                )
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
             }
             context.sendBroadcast(intent)

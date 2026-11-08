@@ -4,46 +4,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:background="#0D1117"
-    android:padding="10dp">
+    android:background="@drawable/widget_background"
+    android:padding="8dp">
 
-    <!-- Left Column: Streak Counter & Status -->
+    <!-- Left Column: Streak Cockpit Card -->
     <LinearLayout
-        android:layout_width="88dp"
+        android:layout_width="96dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="#161B22"
+        android:background="@drawable/widget_streak_card"
         android:padding="6dp">
 
         <TextView
             android:id="@+id/widget_status_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/widget_status_pill"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
             android:text="🔥 ACTIVE"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:textColor="#F97316" />
+            android:textColor="#F59E0B" />
 
         <TextView
             android:id="@+id/widget_streak_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:text="0"
-            android:textSize="34sp"
+            android:textSize="36sp"
             android:textStyle="bold"
-            android:textColor="#F97316" />
+            android:textColor="#F59E0B" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="DAY STREAK"
-            android:textSize="8sp"
-            android:textColor="#8B949E"
+            android:text="DAYS CONQUERED"
+            android:textSize="7.5sp"
+            android:textColor="#64748B"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Right Column: Goals Status, Incomplete Habits & AI Motivation -->
+    <!-- Right Column: Cockpit Telemetry HUD & AI Quote -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -53,66 +59,65 @@
         android:paddingEnd="4dp"
         android:gravity="center_vertical">
 
-        <!-- Challenge Title -->
+        <!-- Challenge Title HUD -->
         <TextView
             android:id="@+id/widget_challenge_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="100 DAYS OF CODE"
+            android:text="⚡ 100 DAYS OF CODE"
             android:textSize="10sp"
             android:textStyle="bold"
-            android:textColor="#8B949E"
-            android:singleLine="true" />
+            android:textColor="#38BDF8"
+            android:singleLine="true"
+            android:ellipsize="end" />
 
-        <!-- Row 1: Supreme Goal Status (Done / Incomplete) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/widget_supreme_goal_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎯 Supreme Goal: Incomplete ⏳"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="#EF4444"
-                android:singleLine="true" />
-        </LinearLayout>
-
-        <!-- Row 2: Incomplete Habits Status -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/widget_habits_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⚡ Habits: 0/4 (4 Incomplete)"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="#EAB308"
-                android:singleLine="true" />
-        </LinearLayout>
-
-        <!-- AI Motivation / Quote -->
+        <!-- Supreme Mission Status -->
         <TextView
-            android:id="@+id/widget_ai_motivation"
+            android:id="@+id/widget_supreme_goal_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="&quot;Lock in today's supreme mission and micro-habits!&quot;"
+            android:layout_marginTop="3dp"
+            android:text="🎯 Supreme Mission: PENDING ⏳"
             android:textSize="10sp"
-            android:textColor="#C9D1D9"
-            android:maxLines="2"
+            android:textStyle="bold"
+            android:textColor="#EF4444"
+            android:singleLine="true"
             android:ellipsize="end" />
+
+        <!-- Daily Micro-Habits Status -->
+        <TextView
+            android:id="@+id/widget_habits_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="⚡ Habits: 0/4 (4 Pending ⏳)"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#F59E0B"
+            android:singleLine="true"
+            android:ellipsize="end" />
+
+        <!-- AI Mindset & Reality Check Quote Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/widget_quote_card"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/widget_ai_motivation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="&quot;Do not break the chain. Victory is won today.&quot;"
+                android:textSize="9.5sp"
+                android:textColor="#E2E8F0"
+                android:maxLines="2"
+                android:ellipsize="end" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>
