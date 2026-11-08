@@ -80,7 +80,9 @@ export const STORAGE_KEYS = {
   LAST_EVALUATED_DATE: '@streak_last_eval_date',
   API_KEY: '@streak_custom_api_key',
   SUPREME_GOAL: '@streak_supreme_goal',
-  VISION_BOARD: '@streak_vision_board'
+  VISION_BOARD: '@streak_vision_board',
+  HABIT_GRIDS_EXPANDED: '@streak_habit_grids_expanded',
+  REMINDERS_EXPANDED: '@streak_reminders_expanded'
 };
 
 // Date format helper: YYYY-MM-DD in local time
@@ -922,4 +924,45 @@ export const updateVisionBoardItem = async (type, { uri, name }) => {
   await saveVisionBoard(current);
   return current;
 };
+
+export const getHabitGridsExpandedPreference = async () => {
+  try {
+    const raw = await getMultiScopedItem(STORAGE_KEYS.HABIT_GRIDS_EXPANDED);
+    if (raw === null || raw === undefined) {
+      return false; // Collapsed by default
+    }
+    return raw === 'true';
+  } catch (e) {
+    return false;
+  }
+};
+
+export const saveHabitGridsExpandedPreference = async (isExpanded) => {
+  try {
+    await setMultiScopedItem(STORAGE_KEYS.HABIT_GRIDS_EXPANDED, isExpanded ? 'true' : 'false');
+  } catch (e) {
+    console.error('Failed to save habit grids expanded preference', e);
+  }
+};
+
+export const getRemindersExpandedPreference = async () => {
+  try {
+    const raw = await getMultiScopedItem(STORAGE_KEYS.REMINDERS_EXPANDED);
+    if (raw === null || raw === undefined) {
+      return false; // Collapsed by default
+    }
+    return raw === 'true';
+  } catch (e) {
+    return false;
+  }
+};
+
+export const saveRemindersExpandedPreference = async (isExpanded) => {
+  try {
+    await setMultiScopedItem(STORAGE_KEYS.REMINDERS_EXPANDED, isExpanded ? 'true' : 'false');
+  } catch (e) {
+    console.error('Failed to save reminders expanded preference', e);
+  }
+};
+
 
