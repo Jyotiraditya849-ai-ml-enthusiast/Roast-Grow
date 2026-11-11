@@ -1,16 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
-  Dimensions
+  Platform
 } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useFocusTimer } from '../../context/FocusTimerContext';
 import { THEME } from '../../theme';
+import { FlipClockDisplay } from './FlipClock/FlipClockDisplay';
 
 export const FocusPomodoroTimer = () => {
   const {
@@ -24,19 +23,15 @@ export const FocusPomodoroTimer = () => {
     adjustMinutes,
     togglePlay,
     handleReset,
-    formatTime,
     PRESETS
   } = useFocusTimer();
 
-  // SVG Ring Progress Calculations
-  const radius = 68;
-  const strokeWidth = 8;
-  const circumference = 2 * Math.PI * radius;
   const progressRatio = initialSeconds > 0 ? (initialSeconds - secondsLeft) / initialSeconds : 0;
-  const strokeDashoffset = circumference * (1 - progressRatio);
-
   const isBreak = mode === 'shortBreak' || mode === 'longBreak';
   const primaryColor = isBreak ? THEME.blueLight : (mode === 'deepWork' ? THEME.marigold : THEME.crimson);
+
+  const remainingMins = Math.floor(secondsLeft / 60);
+  const remainingSecs = secondsLeft % 60;
 
   return (
     <View style={styles.container}>
@@ -57,7 +52,9 @@ export const FocusPomodoroTimer = () => {
         </View>
       </View>
 
-      <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit>Focus & Pomodoro Timer</Text>
+      <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit>
+        Focus & Pomodoro Timer
+      </Text>
       <Text style={styles.subtitle}>
         Eliminate distractions. Lock in uninterrupted flow state for your Supreme Mission.
       </Text>
@@ -93,54 +90,64 @@ export const FocusPomodoroTimer = () => {
         })}
       </View>
 
-      {/* Circular Progress Gauge & Countdown */}
+      {/* Professional Mechanical Flip Clock Display */}
       <View style={styles.timerDisplayWrap}>
-        <Svg width={164} height={164} style={styles.svgRing}>
-          <Defs>
-            <LinearGradient id="timerGradFocus" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={THEME.blue} />
-              <Stop offset="50%" stopColor={THEME.marigold} />
-              <Stop offset="100%" stopColor={THEME.crimson} />
-            </LinearGradient>
-            <LinearGradient id="timerGradBreak" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={THEME.blueDeep} />
-              <Stop offset="100%" stopColor={THEME.blueLight} />
-            </LinearGradient>
-          </Defs>
-
-          {/* Background Track Circle */}
-          <Circle
-            cx={82}
-            cy={82}
-            r={radius}
-            stroke="#0d1626"
-            strokeWidth={strokeWidth}
-            fill="none"
+        {/* Top Status Pill */}
+        <View
+          style={[
+            styles.statusPill,
+            isRunning && {
+              borderColor: `${primaryColor}66`,
+              backgroundColor: `${primaryColor}18`
+            }
+          ]}
+        >
+          <View
+            style={[
+              styles.statusLiveDot,
+              { backgroundColor: isRunning ? primaryColor : '#64748b' }
+            ]}
           />
-
-          {/* Animated Progress Circle */}
-          <Circle
-            cx={82}
-            cy={82}
-            r={radius}
-            stroke={isBreak ? 'url(#timerGradBreak)' : 'url(#timerGradFocus)'}
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${circumference} ${circumference}`}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            fill="none"
-            transform="rotate(-90 82 82)"
-          />
-        </Svg>
-
-        {/* Center Clock Digits & Label */}
-        <View style={styles.timerCenterContent}>
-          <Text style={[styles.timeDigits, { color: primaryColor }]} numberOfLines={1}>
-            {formatTime(secondsLeft)}
+          <Text
+            style={[
+              styles.statusText,
+              isRunning && { color: primaryColor, fontWeight: '800' }
+            ]}
+          >
+            {isRunning ? (isBreak ? 'RECHARGING BREAK' : 'FOCUS IN SESSION') : 'TIMER PAUSED'}
           </Text>
-          <Text style={styles.timerModeLabel} numberOfLines={1}>
-            {isRunning ? (isBreak ? 'RECHARGING' : 'FOCUS IN SESSION') : 'PAUSED'}
-          </Text>
+        </View>
+
+        {/* The Animated Mechanical Flip Clock */}
+        <FlipClockDisplay
+          secondsLeft={secondsLeft}
+          isRunning={isRunning}
+          accentColor={primaryColor}
+          mode={mode}
+        />
+
+        {/* Linear Progress Bar & Readout */}
+        <View style={styles.progressBarWrap}>
+          <View style={styles.progressBarTrack}>
+            <View
+              style={[
+                styles.progressBarFill,
+                {
+                  width: `${Math.round(progressRatio * 100)}%`,
+                  backgroundColor: primaryColor,
+                  shadowColor: primaryColor
+                }
+              ]}
+            />
+          </View>
+          <View style={styles.progressTextRow}>
+            <Text style={styles.progressTimeRemaining} numberOfLines={1}>
+              {remainingMins}m {remainingSecs}s remaining
+            </Text>
+            <Text style={[styles.progressPercentText, { color: primaryColor }]} numberOfLines={1}>
+              {Math.round(progressRatio * 100)}% Conquered
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -173,7 +180,7 @@ export const FocusPomodoroTimer = () => {
           onPress={handleReset}
           activeOpacity={0.7}
         >
-          <Feather name="rotate-ccw" size={17} color={THEME.textMuted} />
+          <Feather name="rotate-ccw" size={16} color={THEME.textMuted} />
           <Text style={styles.resetBtnText}>Reset</Text>
         </TouchableOpacity>
 
@@ -191,7 +198,7 @@ export const FocusPomodoroTimer = () => {
         >
           <Ionicons
             name={isRunning ? 'pause' : 'play'}
-            size={22}
+            size={21}
             color={isRunning ? primaryColor : (isBreak ? '#000000' : '#ffffff')}
             style={!isRunning ? { marginLeft: 2 } : null}
           />
@@ -294,7 +301,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 14
+    marginBottom: 12
   },
   presetPill: {
     backgroundColor: THEME.bgInput,
@@ -310,36 +317,78 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700'
   },
+  /* Flip Clock Display Container */
   timerDisplayWrap: {
+    backgroundColor: '#070b13',
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginVertical: 8,
+    borderWidth: 1.2,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
-    position: 'relative'
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 4
   },
-  svgRing: {
-    transform: [{ rotateZ: '0deg' }]
-  },
-  timerCenterContent: {
-    position: 'absolute',
+  statusPill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 140
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: '#101622',
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    marginBottom: 6
   },
-  timeDigits: {
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: 1,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    textAlign: 'center'
+  statusLiveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3
   },
-  timerModeLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: THEME.textMuted,
-    letterSpacing: 1,
-    marginTop: 2,
-    textTransform: 'uppercase',
-    textAlign: 'center'
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#94a3b8',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase'
+  },
+  progressBarWrap: {
+    width: '100%',
+    maxWidth: 270,
+    marginTop: 8
+  },
+  progressBarTrack: {
+    height: 5,
+    backgroundColor: '#121824',
+    borderRadius: 3,
+    overflow: 'hidden'
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 4
+  },
+  progressTextRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6
+  },
+  progressTimeRemaining: {
+    fontSize: 10.5,
+    color: '#8b949e',
+    fontWeight: '600'
+  },
+  progressPercentText: {
+    fontSize: 10.5,
+    fontWeight: '800'
   },
   stepperRow: {
     flexDirection: 'row',
