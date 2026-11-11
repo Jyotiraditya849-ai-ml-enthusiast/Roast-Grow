@@ -7,7 +7,7 @@
     android:background="@drawable/widget_background"
     android:padding="8dp">
 
-    <!-- Left Column: Streak Cockpit Card -->
+    <!-- Left Column: Streak Cockpit Card (Static Anchor) -->
     <LinearLayout
         android:layout_width="96dp"
         android:layout_height="match_parent"
@@ -49,75 +49,157 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Right Column: Cockpit Telemetry HUD & AI Quote -->
-    <LinearLayout
+    <!-- Right Column: Autonomous Animated ViewFlipper (Smoothly cycles between Status HUD & AI Mindset) -->
+    <ViewFlipper
+        android:id="@+id/widget_flipper"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
         android:paddingStart="10dp"
         android:paddingEnd="4dp"
-        android:gravity="center_vertical">
+        android:autoStart="true"
+        android:flipInterval="3500"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out">
 
-        <!-- Challenge Title HUD -->
-        <TextView
-            android:id="@+id/widget_challenge_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⚡ 100 DAYS OF CODE"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:textColor="#38BDF8"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <!-- Supreme Mission Status -->
-        <TextView
-            android:id="@+id/widget_supreme_goal_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:text="🎯 Supreme Mission: PENDING ⏳"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:textColor="#EF4444"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <!-- Daily Micro-Habits Status -->
-        <TextView
-            android:id="@+id/widget_habits_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="⚡ Habits: 0/4 (4 Pending ⏳)"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:textColor="#F59E0B"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <!-- AI Mindset & Reality Check Quote Card -->
+        <!-- ============================================================== -->
+        <!-- SCREEN 1: Cockpit Mission & Habits Telemetry HUD               -->
+        <!-- ============================================================== -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/widget_quote_card"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
 
+            <!-- Challenge Title HUD -->
             <TextView
-                android:id="@+id/widget_ai_motivation"
+                android:id="@+id/widget_challenge_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡ 100 DAYS OF CODE"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:textColor="#38BDF8"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <!-- Supreme Mission Status -->
+            <TextView
+                android:id="@+id/widget_supreme_goal_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="🎯 Supreme Mission: PENDING ⏳"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#EF4444"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <!-- Daily Micro-Habits Status -->
+            <TextView
+                android:id="@+id/widget_habits_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2.5dp"
+                android:text="⚡ Habits: 0/4 (4 Pending ⏳)"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#F59E0B"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <!-- Animation Slide Indicator 1 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●  "
+                    android:textSize="7sp"
+                    android:textColor="#F59E0B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="○  TELEMETRY HUD"
+                    android:textSize="7.5sp"
+                    android:textColor="#64748B"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============================================================== -->
+        <!-- SCREEN 2: AI Motivation & Mindset Cockpit Card                 -->
+        <!-- ============================================================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="3dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🤖 AI MINDSET // PROTOCOL"
+                    android:textSize="8.5sp"
+                    android:textStyle="bold"
+                    android:textColor="#F59E0B" />
+            </LinearLayout>
+
+            <!-- AI Mindset Quote Card -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="&quot;Do not break the chain. Victory is won today.&quot;"
-                android:textSize="9.5sp"
-                android:textColor="#E2E8F0"
-                android:maxLines="2"
-                android:ellipsize="end" />
+                android:background="@drawable/widget_quote_card"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp">
+
+                <TextView
+                    android:id="@+id/widget_ai_motivation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="&quot;Do not break the chain. Victory is won today.&quot;"
+                    android:textSize="9.5sp"
+                    android:textColor="#E2E8F0"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- Animation Slide Indicator 2 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="○  "
+                    android:textSize="7sp"
+                    android:textColor="#64748B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●  AI ADVICE"
+                    android:textSize="7.5sp"
+                    android:textColor="#F59E0B"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+    </ViewFlipper>
 
 </LinearLayout>

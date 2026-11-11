@@ -162,7 +162,7 @@ export const AuthScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.keyboardContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Brand Header */}
         <View style={styles.brandHeader}>
           <View style={styles.logoBadge}>

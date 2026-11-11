@@ -64,7 +64,7 @@ export const AnalyticsScreen = React.memo(() => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Metric Cards Row */}
         <View style={styles.metricsRow}>
           <View style={[styles.metricCard, styles.streakMetricCard, isPureRed && styles.streakMetricCardRed]}>

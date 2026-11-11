@@ -116,6 +116,7 @@ export const DashboardScreen = React.memo(({ onNavigateToVault, onNavigateToCrea
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

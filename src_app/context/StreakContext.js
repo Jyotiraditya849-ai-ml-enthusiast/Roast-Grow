@@ -6,6 +6,7 @@ import {
   saveMicroHabits,
   toggleMicroHabit,
   performDailyCheckIn,
+  revertDailyCheckIn,
   getFreezeCoins,
   spendFreezeCoin,
   getActivityHistory,
@@ -37,6 +38,7 @@ import {
   requestNotificationPermissions
 } from '../services/notificationService';
 import { useAuth } from './AuthContext';
+import { showGlobalCyberNotification } from './NotificationContext';
 
 const StreakContext = createContext(null);
 
@@ -255,21 +257,64 @@ export const StreakProvider = ({ children }) => {
     [habits, todayJournal, syncWidgetState]
   );
 
-  // Auto check-in trigger when criteria is fulfilled
+  // Auto check-in trigger / rollback when criteria changes dynamically
   const checkAndTriggerAutoCheckIn = useCallback(
     async (updatedHabits, updatedSupreme) => {
       const today = getLocalDateString();
+      const eligibility = checkStreakEligibility(updatedHabits, updatedSupreme);
+
       if (challenge?.lastActiveDate === today) {
-        // Already checked in for today
+        // Today is currently recorded as checked in.
+        // If criteria is NO LONGER met (e.g. user unchecked a habit dropping below 3, or unchecked supreme goal):
+        if (!eligibility.isEligible) {
+          try {
+            const revertResult = await revertDailyCheckIn();
+            if (revertResult.success) {
+              setChallenge(revertResult.challenge);
+              setFreezeCoins(revertResult.freezeCoins);
+              setHistory(revertResult.history);
+
+              const completedCount = (updatedHabits || []).filter((h) => h.completedToday).length;
+              const aiRes = await generateAIMessage({
+                streak: revertResult.rolledBackStreak,
+                challengeTitle: revertResult.challenge.title,
+                mood: todayJournal?.mood || '😐',
+                journalText: todayJournal?.text || '',
+                completedHabitCount: completedCount,
+                isBroken: false
+              });
+              setAiMessage(aiRes.text);
+              setAiType(aiRes.type);
+
+              await syncWidgetState({
+                challenge: revertResult.challenge,
+                habits: updatedHabits,
+                supreme: updatedSupreme,
+                aiText: aiRes.text
+              });
+
+              showGlobalCyberNotification({
+                type: 'warning',
+                title: 'Streak Reverted ⚠️',
+                message: !eligibility.isHabitsMet
+                  ? 'Micro-habits fell below 3. Complete at least 3 habits to reclaim today\'s streak.'
+                  : 'Supreme Mission unchecked. Complete both to claim streak.',
+                hudTag: '[STREAK // ROLLED_BACK]'
+              });
+            }
+          } catch (err) {
+            console.warn('[StreakContext] Revert check-in error:', err);
+          }
+        }
         return;
       }
 
-      const eligibility = checkStreakEligibility(updatedHabits, updatedSupreme);
+      // If not yet checked in and now eligible:
       if (eligibility.isEligible) {
         await checkIn({ showAnimation: true });
       }
     },
-    [challenge, checkStreakEligibility, checkIn]
+    [challenge, checkStreakEligibility, checkIn, todayJournal, syncWidgetState]
   );
 
   // Toggle habit checkbox
@@ -300,7 +345,7 @@ export const StreakProvider = ({ children }) => {
   // Remove a micro-habit (Core foundational habits are protected)
   const deleteHabit = async (habitId) => {
     if (habitId?.startsWith('core_')) {
-      showCyberNotification({
+      showGlobalCyberNotification({
         type: 'warning',
         title: 'Core Pillar Locked 🔒',
         message: 'The 4 non-negotiable core habits cannot be deleted.',
@@ -312,6 +357,7 @@ export const StreakProvider = ({ children }) => {
     setHabits(updated);
     await saveMicroHabits(updated);
     await syncWidgetState({ habits: updated });
+    await checkAndTriggerAutoCheckIn(updated, supremeGoal);
   };
 
   // Supreme Goal handlers

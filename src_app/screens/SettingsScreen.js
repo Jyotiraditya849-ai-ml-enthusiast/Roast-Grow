@@ -233,7 +233,7 @@ export const SettingsScreen = React.memo(() => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Account Profile Card */}
         <View style={styles.accountCard}>
           <View style={styles.accountTop}>

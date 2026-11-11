@@ -36,7 +36,7 @@ export const JournalScreen = React.memo(() => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Header Action Card */}
         <View style={styles.todayCard}>
           <View style={styles.todayHeader}>

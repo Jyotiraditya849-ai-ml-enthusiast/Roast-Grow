@@ -8,7 +8,8 @@ import {
   Modal,
   ScrollView,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  Animated
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -19,6 +20,7 @@ import {
 } from '../../storage/asyncStorage';
 import {
   pickRoadmapFileOrPhoto,
+  pickPhotoFromGallery,
   takeRoadmapPhoto
 } from '../../services/mediaPickerService';
 import { showGlobalCyberNotification } from '../../context/NotificationContext';
@@ -127,13 +129,34 @@ export const MistakesVsDreamCard = () => {
   const [dreamTapCount, setDreamTapCount] = useState(0);
   const dreamTimeoutRef = useRef(null);
 
-  // Triple-Tap handler to reveal blurred photos
+  // Spring animation values for tactile tap feedback
+  const mistakesScaleAnim = useRef(new Animated.Value(1)).current;
+  const dreamScaleAnim = useRef(new Animated.Value(1)).current;
+  const mistakesFadeAnim = useRef(new Animated.Value(1)).current;
+  const dreamFadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Triple-Tap handler to reveal blurred photos with spring feedback
   const handlePhotoTap = (type) => {
     if (type === 'mistakes') {
       if (isMistakesRevealed) {
         openFullscreen('mistakes');
         return;
       }
+
+      // Tap spring pulse animation
+      Animated.sequence([
+        Animated.timing(mistakesScaleAnim, {
+          toValue: 1.15,
+          duration: 90,
+          useNativeDriver: true
+        }),
+        Animated.spring(mistakesScaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 120,
+          useNativeDriver: true
+        })
+      ]).start();
 
       const nextCount = mistakesTapCount + 1;
       setMistakesTapCount(nextCount);
@@ -151,6 +174,12 @@ export const MistakesVsDreamCard = () => {
       if (nextCount >= 3) {
         setIsMistakesRevealed(true);
         setMistakesTapCount(0);
+        Animated.timing(mistakesFadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true
+        }).start();
+
         if (Platform.OS !== 'web') {
           try {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -174,6 +203,21 @@ export const MistakesVsDreamCard = () => {
         return;
       }
 
+      // Tap spring pulse animation
+      Animated.sequence([
+        Animated.timing(dreamScaleAnim, {
+          toValue: 1.15,
+          duration: 90,
+          useNativeDriver: true
+        }),
+        Animated.spring(dreamScaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 120,
+          useNativeDriver: true
+        })
+      ]).start();
+
       const nextCount = dreamTapCount + 1;
       setDreamTapCount(nextCount);
 
@@ -190,6 +234,12 @@ export const MistakesVsDreamCard = () => {
       if (nextCount >= 3) {
         setIsDreamRevealed(true);
         setDreamTapCount(0);
+        Animated.timing(dreamFadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true
+        }).start();
+
         if (Platform.OS !== 'web') {
           try {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -229,12 +279,20 @@ export const MistakesVsDreamCard = () => {
   // Handle picking photo from gallery/files
   const handleUploadPhoto = async (type) => {
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (e) {}
     }
 
     setIsUploading(true);
     try {
-      const result = await pickRoadmapFileOrPhoto();
+      // First try dedicated gallery image picker for speed & smoothness
+      let result = await pickPhotoFromGallery();
+      if (!result) {
+        // Fallback to document/file picker
+        result = await pickRoadmapFileOrPhoto();
+      }
+
       if (result && result.uri) {
         const updated = await updateVisionBoardItem(type, {
           uri: result.uri,
@@ -269,7 +327,9 @@ export const MistakesVsDreamCard = () => {
   // Camera alternative
   const handleCameraCapture = async (type) => {
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (e) {}
     }
 
     setIsUploading(true);
@@ -298,6 +358,21 @@ export const MistakesVsDreamCard = () => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  // Safe launcher from Humble Guide Modal with transition delay for Android Activity
+  const handleCameraFromGuide = (type) => {
+    setGuideModalVisible(false);
+    setTimeout(() => {
+      handleCameraCapture(type);
+    }, 280);
+  };
+
+  const handleGalleryFromGuide = (type) => {
+    setGuideModalVisible(false);
+    setTimeout(() => {
+      handleUploadPhoto(type);
+    }, 280);
   };
 
   // Open full-screen modal
@@ -370,10 +445,10 @@ export const MistakesVsDreamCard = () => {
           <View style={styles.guidePromptIconWrap}>
             <MaterialCommunityIcons name="feather" size={20} color={THEME.marigoldLight} />
           </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.guidePromptTitle}>
-                ✍️ Humble Guide: What to write on your paper?
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, minWidth: 0 }}>
+              <Text style={styles.guidePromptTitle} numberOfLines={2}>
+                ✍️ Humble Guide: What to write on paper?
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newBadgeText}>9 QUESTIONS</Text>
@@ -410,16 +485,22 @@ export const MistakesVsDreamCard = () => {
                 source={{ uri: mistakesUri }}
                 style={[
                   styles.previewImage,
-                  !isMistakesRevealed && (Platform.OS === 'web' ? { filter: 'blur(20px)', transform: [{ scale: 1.1 }] } : {})
+                  !isMistakesRevealed && (Platform.OS === 'web' ? { filter: 'blur(16px)', transform: [{ scale: 1.05 }] } : {})
                 ]}
-                blurRadius={!isMistakesRevealed ? (Platform.OS === 'ios' ? 24 : 18) : 0}
+                blurRadius={!isMistakesRevealed ? (Platform.OS === 'ios' ? 20 : 6) : 0}
                 resizeMode="cover"
               />
 
               {/* Blurred Secret Lock Overlay (Triple-tap to reveal) */}
               {!isMistakesRevealed && (
                 <View style={styles.blurCoverOverlay} pointerEvents="none">
-                  <View style={[styles.blurLockBadge, styles.mistakesBlurBadge]}>
+                  <Animated.View
+                    style={[
+                      styles.blurLockBadge,
+                      styles.mistakesBlurBadge,
+                      { transform: [{ scale: mistakesScaleAnim }] }
+                    ]}
+                  >
                     <FontAwesome5
                       name={mistakesTapCount > 0 ? "unlock-alt" : "lock"}
                       size={15}
@@ -436,7 +517,7 @@ export const MistakesVsDreamCard = () => {
                       <View style={[styles.tapDot, mistakesTapCount >= 2 && styles.tapDotCrimsonActive]} />
                       <View style={[styles.tapDot, mistakesTapCount >= 3 && styles.tapDotCrimsonActive]} />
                     </View>
-                  </View>
+                  </Animated.View>
                 </View>
               )}
 
@@ -495,6 +576,18 @@ export const MistakesVsDreamCard = () => {
             </TouchableOpacity>
           )}
 
+          {/* Quick Action: Read 9 Questions / Update Note */}
+          <TouchableOpacity
+            style={styles.readUpdateBtnCrimson}
+            onPress={() => setGuideModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <MaterialCommunityIcons name="feather" size={12} color={THEME.crimsonPureRed} />
+            <Text style={styles.readUpdateBtnTextCrimson} numberOfLines={1}>
+              {mistakesUri ? 'Read 9 Questions & Update' : 'Read 9 Questions'}
+            </Text>
+          </TouchableOpacity>
+
           {/* Bottom Card Footer */}
           <Text style={styles.cardFooterHintCrimson} numberOfLines={1}>
             {mistakesUri
@@ -526,16 +619,22 @@ export const MistakesVsDreamCard = () => {
                 source={{ uri: dreamUri }}
                 style={[
                   styles.previewImage,
-                  !isDreamRevealed && (Platform.OS === 'web' ? { filter: 'blur(20px)', transform: [{ scale: 1.1 }] } : {})
+                  !isDreamRevealed && (Platform.OS === 'web' ? { filter: 'blur(16px)', transform: [{ scale: 1.05 }] } : {})
                 ]}
-                blurRadius={!isDreamRevealed ? (Platform.OS === 'ios' ? 24 : 18) : 0}
+                blurRadius={!isDreamRevealed ? (Platform.OS === 'ios' ? 20 : 6) : 0}
                 resizeMode="cover"
               />
 
               {/* Blurred Secret Lock Overlay (Triple-tap to reveal) */}
               {!isDreamRevealed && (
                 <View style={styles.blurCoverOverlay} pointerEvents="none">
-                  <View style={[styles.blurLockBadge, styles.dreamBlurBadge]}>
+                  <Animated.View
+                    style={[
+                      styles.blurLockBadge,
+                      styles.dreamBlurBadge,
+                      { transform: [{ scale: dreamScaleAnim }] }
+                    ]}
+                  >
                     <FontAwesome5
                       name={dreamTapCount > 0 ? "unlock-alt" : "lock"}
                       size={15}
@@ -552,7 +651,7 @@ export const MistakesVsDreamCard = () => {
                       <View style={[styles.tapDot, dreamTapCount >= 2 && styles.tapDotGoldActive]} />
                       <View style={[styles.tapDot, dreamTapCount >= 3 && styles.tapDotGoldActive]} />
                     </View>
-                  </View>
+                  </Animated.View>
                 </View>
               )}
 
@@ -610,6 +709,18 @@ export const MistakesVsDreamCard = () => {
               </View>
             </TouchableOpacity>
           )}
+
+          {/* Quick Action: Update Dream Vision Button */}
+          <TouchableOpacity
+            style={styles.readUpdateBtnGold}
+            onPress={() => handleUploadPhoto('dream')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="camera-outline" size={12} color={THEME.marigoldLight} />
+            <Text style={styles.readUpdateBtnTextGold} numberOfLines={1}>
+              {dreamUri ? 'Update Dream Vision' : '+ Add Dream Pic'}
+            </Text>
+          </TouchableOpacity>
 
           {/* Bottom Card Footer */}
           <Text style={styles.cardFooterHintGold} numberOfLines={1}>
@@ -670,6 +781,7 @@ export const MistakesVsDreamCard = () => {
               style={styles.guideQuestionsScroll}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 24 }}
+              keyboardShouldPersistTaps="handled"
             >
               {/* Emotional Intro Box */}
               <View style={styles.introLetterBox}>
@@ -711,7 +823,7 @@ export const MistakesVsDreamCard = () => {
                 <View style={styles.closingBtnsRow}>
                   <TouchableOpacity
                     style={styles.guideCameraBtn}
-                    onPress={() => handleCameraCapture('mistakes')}
+                    onPress={() => handleCameraFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
                     <Ionicons name="camera" size={18} color="#ffffff" />
@@ -720,7 +832,7 @@ export const MistakesVsDreamCard = () => {
 
                   <TouchableOpacity
                     style={styles.guideGalleryBtn}
-                    onPress={() => handleUploadPhoto('mistakes')}
+                    onPress={() => handleGalleryFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
                     <Ionicons name="images-outline" size={18} color={THEME.marigoldLight} />
@@ -905,7 +1017,8 @@ const styles = StyleSheet.create({
   guidePromptTitle: {
     fontSize: 12,
     fontWeight: '800',
-    color: THEME.marigoldLight
+    color: THEME.marigoldLight,
+    flexShrink: 1
   },
   guidePromptSubtitle: {
     fontSize: 10,
@@ -1031,7 +1144,46 @@ const styles = StyleSheet.create({
     bottom: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8
+    padding: 8,
+    backgroundColor: 'rgba(4, 7, 17, 0.78)'
+  },
+  readUpdateBtnCrimson: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(225, 29, 72, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(225, 29, 72, 0.35)',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginTop: 6
+  },
+  readUpdateBtnTextCrimson: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: THEME.crimsonPureRed,
+    letterSpacing: 0.3
+  },
+  readUpdateBtnGold: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginTop: 6
+  },
+  readUpdateBtnTextGold: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: THEME.marigoldLight,
+    letterSpacing: 0.3
   },
   blurLockBadge: {
     backgroundColor: 'rgba(5, 9, 18, 0.9)',

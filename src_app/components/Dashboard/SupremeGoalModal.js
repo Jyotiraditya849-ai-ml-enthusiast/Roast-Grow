@@ -111,7 +111,7 @@ export const SupremeGoalModal = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.body} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Main Goal Title */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Supreme Goal Title 🎯</Text>

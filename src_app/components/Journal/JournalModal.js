@@ -719,7 +719,7 @@ export const JournalModal = ({
               </Text>
 
               {/* Theme Options */}
-              <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 {JOURNAL_THEMES.map((theme) => {
                   const isSelected = theme.id === themeId;
                   return (

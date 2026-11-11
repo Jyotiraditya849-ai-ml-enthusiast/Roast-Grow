@@ -58,6 +58,7 @@ export const CreateMissionScreen = React.memo(({ onNavigateToHome }) => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

@@ -111,6 +111,51 @@ export const pickRoadmapFileOrPhoto = async () => {
   }
 };
 
+export const pickPhotoFromGallery = async () => {
+  try {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        showGlobalCyberNotification({
+          type: 'warning',
+          title: 'Permission Required 📷',
+          message: 'Permission to access your gallery is required to choose photos.',
+          hudTag: '[GALLERY // PERMISSION_REQUIRED]'
+        });
+        return null;
+      }
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.85
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      const mime = 'image/jpeg';
+      const persistentUri = await ensurePersistentBase64(asset.uri, mime);
+      return {
+        uri: persistentUri,
+        name: asset.fileName || 'gallery_photo.jpg',
+        type: 'image',
+        mimeType: mime
+      };
+    }
+    return null;
+  } catch (error) {
+    console.warn('pickPhotoFromGallery error:', error);
+    showGlobalCyberNotification({
+      type: 'error',
+      title: 'Gallery Error',
+      message: 'Unable to open photo gallery.',
+      hudTag: '[GALLERY // ERROR]'
+    });
+    return null;
+  }
+};
+
 export const takeRoadmapPhoto = async () => {
   try {
     if (Platform.OS !== 'web') {

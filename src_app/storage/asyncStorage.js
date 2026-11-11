@@ -466,6 +466,83 @@ export const performDailyCheckIn = async () => {
   return { success: true, newStreak, earnedNewFreezeCoin, freezeCoins, challenge, history: { ...history } };
 };
 
+export const revertDailyCheckIn = async () => {
+  const today = getLocalDateString();
+  const challenge = await getChallenge();
+  let freezeCoins = await getFreezeCoins();
+  const history = await getActivityHistory();
+  const habits = await getMicroHabits();
+
+  // Only revert if today was actually marked as completed/checked-in
+  if (challenge.lastActiveDate !== today) {
+    return {
+      success: false,
+      rolledBackStreak: challenge.currentStreak || 0,
+      challenge,
+      history,
+      freezeCoins
+    };
+  }
+
+  // 1. If a milestone coin was earned for this streak, safely revert it
+  if (challenge.currentStreak > 0 && challenge.currentStreak % 10 === 0) {
+    freezeCoins = Math.max(0, freezeCoins - 1);
+    await saveFreezeCoins(freezeCoins);
+  }
+
+  // 2. Decrement current streak
+  const rolledBackStreak = Math.max(0, (challenge.currentStreak || 1) - 1);
+  challenge.currentStreak = rolledBackStreak;
+
+  // 3. Find previous active completed date before today
+  const previousActiveDate =
+    Object.keys(history)
+      .filter((dateStr) => dateStr < today && history[dateStr]?.completed)
+      .sort()
+      .pop() || null;
+
+  challenge.lastActiveDate = previousActiveDate;
+  if (rolledBackStreak === 0) {
+    challenge.status = 'ACTIVE';
+  }
+
+  // If bestStreak was tied to today's increment, revert it if no past streak was higher
+  const pastCompletedCount = Object.keys(history).filter(
+    (d) => d < today && history[d]?.completed
+  ).length;
+  if (pastCompletedCount === 0) {
+    challenge.bestStreak = rolledBackStreak;
+  }
+
+  await saveChallenge(challenge);
+
+  // 4. Update today's entry in history to completed: false
+  const totalHabits = habits.length > 0 ? habits.length : 1;
+  const completedHabitsList = habits.filter((h) => h.completedToday);
+  const completedCount = completedHabitsList.length;
+  const ratio = Math.min(1.0, completedCount / totalHabits);
+  const supremeGoal = await getSupremeGoal();
+
+  history[today] = {
+    completed: false,
+    ratio: ratio,
+    completedHabits: completedHabitsList.map((h) => h.title),
+    completedHabitIds: completedHabitsList.map((h) => h.id),
+    supremeGoal: supremeGoal?.dailyGoal?.completed ? supremeGoal.dailyGoal.text : null,
+    freezeUsed: false,
+    timestamp: Date.now()
+  };
+  await saveActivityHistory(history);
+
+  return {
+    success: true,
+    rolledBackStreak,
+    challenge,
+    history: { ...history },
+    freezeCoins
+  };
+};
+
 export const getFreezeCoins = async () => {
   try {
     const raw = await getMultiScopedItem(STORAGE_KEYS.FREEZE_COINS);
