@@ -8,7 +8,7 @@ import {
   Platform
 } from 'react-native';
 
-export const FlipDigitCard = ({
+export const FlipDigitCard = React.memo(({
   digit = '0',
   cardWidth = 54,
   cardHeight = 78,
@@ -23,6 +23,7 @@ export const FlipDigitCard = ({
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let animInstance = null;
     if (digit !== prevDigitRef.current) {
       const oldVal = prevDigitRef.current;
       setPrevDigit(oldVal);
@@ -30,15 +31,20 @@ export const FlipDigitCard = ({
       setIsFlipping(true);
       animValue.setValue(0);
 
-      Animated.timing(animValue, {
+      animInstance = Animated.timing(animValue, {
         toValue: 1,
         duration: 260,
         easing: Easing.bezier(0.4, 0.0, 0.2, 1),
         useNativeDriver: Platform.OS !== 'web'
-      }).start(() => {
+      });
+      animInstance.start(() => {
         setIsFlipping(false);
       });
     }
+
+    return () => {
+      if (animInstance) animInstance.stop();
+    };
   }, [digit, animValue]);
 
   // Interpolations for 3D flip animation
@@ -179,7 +185,7 @@ export const FlipDigitCard = ({
       <View style={[styles.sideNotch, styles.rightNotch, { top: halfHeight - 3 }]} />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   cardContainer: {

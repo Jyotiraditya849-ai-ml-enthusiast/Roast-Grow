@@ -17,7 +17,7 @@ import { THEME } from '../../theme';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const CONFETTI_COLORS = [THEME.marigold, THEME.crimson, THEME.blueLight, THEME.marigoldLight, THEME.blue, '#ffffff'];
-const CONFETTI_COUNT = 36;
+const CONFETTI_COUNT = 14;
 
 export const StreakCelebrationModal = ({
   visible,
@@ -29,24 +29,27 @@ export const StreakCelebrationModal = ({
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Generate randomized confetti elements
+  // Generate randomized lightweight confetti elements (14 particles)
   const confettiAnims = useRef(
     Array.from({ length: CONFETTI_COUNT }, () => ({
-      translateY: new Animated.Value(-50),
-      translateX: (Math.random() - 0.5) * 80,
+      translateY: new Animated.Value(-40),
+      translateX: (Math.random() - 0.5) * 60,
       startX: Math.random() * SCREEN_WIDTH,
       rotate: new Animated.Value(0),
       color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       size: Math.random() * 8 + 6,
-      duration: Math.random() * 1800 + 1800,
-      delay: Math.random() * 400
+      duration: Math.random() * 1200 + 1400,
+      delay: Math.random() * 250
     }))
   ).current;
 
   useEffect(() => {
+    let loopAnim = null;
     if (visible) {
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        try {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (e) {}
       }
 
       // Reset values
@@ -58,42 +61,43 @@ export const StreakCelebrationModal = ({
       Animated.parallel([
         Animated.spring(scaleAnim, {
           toValue: 1,
-          friction: 5,
-          tension: 40,
+          friction: 6,
+          tension: 50,
           useNativeDriver: true
         }),
         Animated.timing(opacityAnim, {
           toValue: 1,
-          duration: 350,
+          duration: 250,
           useNativeDriver: true
         })
       ]).start();
 
-      // Continuous pulse for the flame/badge
-      Animated.loop(
+      // Continuous pulse for the flame/badge with proper stop reference
+      loopAnim = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.1,
-            duration: 800,
+            toValue: 1.08,
+            duration: 700,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
-            duration: 800,
+            duration: 700,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true
           })
         ])
-      ).start();
+      );
+      loopAnim.start();
 
       // Drop confetti
       const dropAnimations = confettiAnims.map((item) => {
-        item.translateY.setValue(-50);
+        item.translateY.setValue(-40);
         item.rotate.setValue(0);
         return Animated.parallel([
           Animated.timing(item.translateY, {
-            toValue: SCREEN_HEIGHT + 60,
+            toValue: SCREEN_HEIGHT + 40,
             duration: item.duration,
             delay: item.delay,
             easing: Easing.out(Easing.quad),
@@ -110,6 +114,13 @@ export const StreakCelebrationModal = ({
 
       Animated.parallel(dropAnimations).start();
     }
+
+    return () => {
+      if (loopAnim) loopAnim.stop();
+      pulseAnim.stopAnimation();
+      scaleAnim.stopAnimation();
+      opacityAnim.stopAnimation();
+    };
   }, [visible]);
 
   if (!visible) return null;

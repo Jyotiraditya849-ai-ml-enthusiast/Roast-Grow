@@ -69,6 +69,10 @@ export const StreakProvider = ({ children }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState({ streak: 1, isMilestone: false });
 
+  // Debounce refs to prevent race-condition freezing on rapid clicks
+  const isTogglingHabitRef = useRef(false);
+  const isTogglingSupremeRef = useRef(false);
+
   // Initialize and evaluate streak on launch
   const initApp = useCallback(async () => {
     setIsLoading(true);
@@ -210,7 +214,7 @@ export const StreakProvider = ({ children }) => {
     [habits, supremeGoal]
   );
 
-  // Complete Daily Check-in
+  // Complete Daily Check-in with Instant Zero-Delay Celebration Trigger
   const checkIn = useCallback(
     async (options = { showAnimation: true }) => {
       try {
@@ -219,27 +223,7 @@ export const StreakProvider = ({ children }) => {
         setFreezeCoins(result.freezeCoins);
         setHistory(result.history);
 
-        const completedCount = habits.filter((h) => h.completedToday).length;
-        setIsAiLoading(true);
-
-        const aiRes = await generateAIMessage({
-          streak: result.newStreak,
-          challengeTitle: result.challenge.title,
-          mood: todayJournal?.mood || '🔥',
-          journalText: todayJournal?.text || '',
-          completedHabitCount: completedCount,
-          isBroken: false
-        });
-
-        setAiMessage(aiRes.text);
-        setAiType(aiRes.type);
-        setIsAiLoading(false);
-
-        await syncWidgetState({
-          challenge: result.challenge,
-          aiText: aiRes.text
-        });
-
+        // Instant Zero-Delay Celebration Trigger: UI pops immediately!
         if (options.showAnimation) {
           setCelebrationData({
             streak: result.newStreak,
@@ -248,9 +232,34 @@ export const StreakProvider = ({ children }) => {
           setShowCelebration(true);
         }
 
+        // Asynchronous non-blocking background AI motivation and widget sync
+        (async () => {
+          try {
+            const completedCount = (habits || []).filter((h) => h.completedToday).length;
+            const aiRes = await generateAIMessage({
+              streak: result.newStreak,
+              challengeTitle: result.challenge.title,
+              mood: todayJournal?.mood || '🔥',
+              journalText: todayJournal?.text || '',
+              completedHabitCount: completedCount,
+              isBroken: false
+            });
+
+            setAiMessage(aiRes.text);
+            setAiType(aiRes.type);
+
+            await syncWidgetState({
+              challenge: result.challenge,
+              aiText: aiRes.text
+            });
+          } catch (aiErr) {
+            console.warn('[checkIn] Background AI generation error:', aiErr);
+          }
+        })();
+
         return result;
       } catch (e) {
-        setIsAiLoading(false);
+        console.error('[checkIn] Error during check-in:', e);
         throw e;
       }
     },
@@ -317,14 +326,36 @@ export const StreakProvider = ({ children }) => {
     [challenge, checkStreakEligibility, checkIn, todayJournal, syncWidgetState]
   );
 
-  // Toggle habit checkbox
+  // Toggle habit checkbox with optimistic UI and tap debouncing
   const toggleHabit = async (habitId) => {
-    const updated = await toggleMicroHabit(habitId);
-    setHabits(updated);
-    const updatedHistory = await getActivityHistory();
-    setHistory({ ...updatedHistory });
-    await syncWidgetState({ habits: updated });
-    await checkAndTriggerAutoCheckIn(updated, supremeGoal);
+    if (isTogglingHabitRef.current) return;
+    isTogglingHabitRef.current = true;
+
+    try {
+      // 1. Instant optimistic state update so UI reacts at 60 FPS
+      const optimistic = habits.map((h) =>
+        h.id === habitId ? { ...h, completedToday: !h.completedToday } : h
+      );
+      setHabits(optimistic);
+
+      const updated = await toggleMicroHabit(habitId);
+      setHabits(updated);
+
+      const updatedHistory = await getActivityHistory();
+      setHistory({ ...updatedHistory });
+
+      // Trigger auto check-in or rollback
+      await checkAndTriggerAutoCheckIn(updated, supremeGoal);
+
+      // Widget sync in background
+      syncWidgetState({ habits: updated });
+    } catch (err) {
+      console.warn('toggleHabit error:', err);
+    } finally {
+      setTimeout(() => {
+        isTogglingHabitRef.current = false;
+      }, 200);
+    }
   };
 
   // Add a new micro-habit to the daily stack
@@ -376,11 +407,33 @@ export const StreakProvider = ({ children }) => {
   };
 
   const toggleSupremeGoal = async () => {
-    const updated = await toggleSupremeDailyGoal();
-    setSupremeGoal(updated);
-    await syncWidgetState({ supreme: updated });
-    await checkAndTriggerAutoCheckIn(habits, updated);
-    return updated;
+    if (isTogglingSupremeRef.current) return supremeGoal;
+    isTogglingSupremeRef.current = true;
+    try {
+      // Optimistic update so switch animates immediately
+      if (supremeGoal?.dailyGoal) {
+        setSupremeGoal((prev) => ({
+          ...prev,
+          dailyGoal: {
+            ...prev.dailyGoal,
+            completed: !prev.dailyGoal.completed
+          }
+        }));
+      }
+
+      const updated = await toggleSupremeDailyGoal();
+      setSupremeGoal(updated);
+      await checkAndTriggerAutoCheckIn(habits, updated);
+      syncWidgetState({ supreme: updated });
+      return updated;
+    } catch (err) {
+      console.warn('toggleSupremeGoal error:', err);
+      return supremeGoal;
+    } finally {
+      setTimeout(() => {
+        isTogglingSupremeRef.current = false;
+      }, 200);
+    }
   };
 
   const updateSupremeInfo = async (details) => {

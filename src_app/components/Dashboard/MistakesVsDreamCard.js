@@ -557,36 +557,51 @@ export const MistakesVsDreamCard = () => {
               </View>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              style={[styles.uploadBox, styles.mistakesUploadBox]}
-              onPress={() => setGuideModalVisible(true)}
-              activeOpacity={0.8}
-            >
+            <View style={[styles.uploadBox, styles.mistakesUploadBox]}>
               <View style={styles.uploadIconCircleCrimson}>
                 <MaterialCommunityIcons name="notebook-edit-outline" size={24} color={THEME.crimson} />
               </View>
               <Text style={styles.uploadPromptTitleCrimson}>Handwritten Mistakes Note</Text>
               <Text style={styles.uploadPromptSub}>
-                Why did you fail? What excuses broke consistency? Sit down and write answers to the 9 questions.
+                Write down your raw truth on paper before taking a photo.
               </Text>
-              <View style={styles.uploadBtnCrimson}>
-                <Ionicons name="create-outline" size={14} color="#ffffff" />
-                <Text style={styles.uploadBtnText}>Read 9 Questions & Upload</Text>
+
+              {/* Direct Buttons on the Card for Zero Friction */}
+              <View style={styles.cardBtnRow}>
+                <TouchableOpacity
+                  style={styles.cardActionBtnPrimary}
+                  onPress={() => setGuideModalVisible(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="newspaper-outline" size={13} color="#ffffff" />
+                  <Text style={styles.cardActionBtnText}>9 Questions</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.cardActionBtnSecondary}
+                  onPress={() => handleUploadPhoto('mistakes')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="camera-outline" size={13} color={THEME.crimsonPureRed} />
+                  <Text style={styles.cardActionBtnTextSecondary}>Upload</Text>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           )}
 
-          {/* Quick Action: Read 9 Questions / Update Note */}
-          <TouchableOpacity
-            style={styles.readUpdateBtnCrimson}
-            onPress={() => setGuideModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="feather" size={12} color={THEME.crimsonPureRed} />
-            <Text style={styles.readUpdateBtnTextCrimson} numberOfLines={1}>
-              {mistakesUri ? 'Read 9 Questions & Update' : 'Read 9 Questions'}
-            </Text>
-          </TouchableOpacity>
+          {/* Quick Action when photo already exists: Read 9 Questions / Update Note */}
+          {mistakesUri ? (
+            <TouchableOpacity
+              style={styles.readUpdateBtnCrimson}
+              onPress={() => setGuideModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="feather" size={12} color={THEME.crimsonPureRed} />
+              <Text style={styles.readUpdateBtnTextCrimson} numberOfLines={1}>
+                Read 9 Questions & Update
+              </Text>
+            </TouchableOpacity>
+          ) : null}
 
           {/* Bottom Card Footer */}
           <Text style={styles.cardFooterHintCrimson} numberOfLines={1}>
@@ -755,16 +770,16 @@ export const MistakesVsDreamCard = () => {
           <View style={styles.guideModalContainer}>
             {/* Modal Top Header */}
             <View style={styles.guideModalHeader}>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, marginRight: 8 }}>
                 <View style={styles.hudBadge}>
                   <View style={[styles.hudDot, { backgroundColor: THEME.marigold }]} />
                   <Text style={styles.hudBadgeText}>HUMBLE REALITY CHECK // BLUEPRINT</Text>
                 </View>
-                <Text style={styles.guideModalMainTitle}>
+                <Text style={styles.guideModalMainTitle} numberOfLines={1}>
                   Ek Khula Khat Apne Aap Ke Naam 📜
                 </Text>
-                <Text style={styles.guideModalSub}>
-                  Take a blank paper and a pen right now. Sit alone in silence. No typing — write your raw truth to these 9 questions.
+                <Text style={styles.guideModalSub} numberOfLines={2}>
+                  Take a blank paper & pen. Sit alone in silence. Answer these 9 deep questions honestly.
                 </Text>
               </View>
               <TouchableOpacity
@@ -776,11 +791,32 @@ export const MistakesVsDreamCard = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Scrollable Questions List */}
+            {/* TOP DIRECT UPLOAD ACTION BAR (Always visible before scrolling!) */}
+            <View style={styles.guideTopActionsRow}>
+              <TouchableOpacity
+                style={styles.guideTopCameraBtn}
+                onPress={() => handleCameraFromGuide('mistakes')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="camera" size={16} color="#ffffff" />
+                <Text style={styles.guideTopCameraBtnText}>Take Photo 📸</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.guideTopGalleryBtn}
+                onPress={() => handleGalleryFromGuide('mistakes')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="images-outline" size={16} color={THEME.marigoldLight} />
+                <Text style={styles.guideTopGalleryBtnText}>From Gallery 📁</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Scrollable Questions List (100% visible with fixed parent container height) */}
             <ScrollView
               style={styles.guideQuestionsScroll}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 24 }}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ paddingBottom: 28 }}
               keyboardShouldPersistTaps="handled"
             >
               {/* Emotional Intro Box */}
@@ -826,7 +862,7 @@ export const MistakesVsDreamCard = () => {
                     onPress={() => handleCameraFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="camera" size={18} color="#ffffff" />
+                    <Ionicons name="camera" size={17} color="#ffffff" />
                     <Text style={styles.guideCameraBtnText}>Take Photo with Camera 📸</Text>
                   </TouchableOpacity>
 
@@ -835,7 +871,7 @@ export const MistakesVsDreamCard = () => {
                     onPress={() => handleGalleryFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="images-outline" size={18} color={THEME.marigoldLight} />
+                    <Ionicons name="images-outline" size={17} color={THEME.marigoldLight} />
                     <Text style={styles.guideGalleryBtnText}>Choose from Gallery 📁</Text>
                   </TouchableOpacity>
                 </View>
@@ -1305,6 +1341,46 @@ const styles = StyleSheet.create({
     lineHeight: 12.5,
     marginBottom: 8
   },
+  cardBtnRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 6,
+    width: '100%'
+  },
+  cardActionBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: THEME.crimson,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    borderRadius: 8
+  },
+  cardActionBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(225, 29, 72, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(225, 29, 72, 0.4)',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    borderRadius: 8
+  },
+  cardActionBtnText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  cardActionBtnTextSecondary: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: THEME.crimsonPureRed
+  },
   uploadBtnCrimson: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1376,12 +1452,51 @@ const styles = StyleSheet.create({
   guideModalContainer: {
     width: '100%',
     maxWidth: 580,
-    maxHeight: '92%',
+    height: '88%',
     backgroundColor: THEME.bgCardElevated,
     borderRadius: 22,
     borderWidth: 1.5,
     borderColor: THEME.borderHighlight,
-    padding: 16
+    padding: 14,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  guideTopActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 10
+  },
+  guideTopCameraBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: THEME.crimson,
+    paddingVertical: 10,
+    borderRadius: 10
+  },
+  guideTopCameraBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800'
+  },
+  guideTopGalleryBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    paddingVertical: 10,
+    borderRadius: 10
+  },
+  guideTopGalleryBtnText: {
+    color: THEME.marigoldLight,
+    fontSize: 12,
+    fontWeight: '800'
   },
   guideModalHeader: {
     flexDirection: 'row',
