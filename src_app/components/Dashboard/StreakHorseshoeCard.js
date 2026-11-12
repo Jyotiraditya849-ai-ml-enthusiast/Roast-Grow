@@ -32,7 +32,7 @@ const describeArc = (x, y, radius, startAngle, endAngle) => {
   ].join(' ');
 };
 
-export const StreakHorseshoeCard = ({
+export const StreakHorseshoeCard = React.memo(({
   challenge,
   freezeCoins = 0,
   aiMessage = '',
@@ -315,7 +315,7 @@ export const StreakHorseshoeCard = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   cardContainer: {

@@ -218,18 +218,31 @@ export const StreakProvider = ({ children }) => {
   const checkIn = useCallback(
     async (options = { showAnimation: true }) => {
       try {
+        const today = getLocalDateString();
+        const currentStreak = challenge?.currentStreak || 0;
+        const projectedStreak = (challenge?.lastActiveDate === today) ? currentStreak : currentStreak + 1;
+        const earnedNewFreezeCoin = projectedStreak > 0 && projectedStreak % 10 === 0;
+
+        // Instant Zero-Delay Celebration Trigger: UI pops on Frame 0 with ZERO lag!
+        if (options.showAnimation) {
+          setCelebrationData({
+            streak: projectedStreak,
+            isMilestone: earnedNewFreezeCoin
+          });
+          setShowCelebration(true);
+        }
+
         const result = await performDailyCheckIn();
         setChallenge(result.challenge);
         setFreezeCoins(result.freezeCoins);
         setHistory(result.history);
 
-        // Instant Zero-Delay Celebration Trigger: UI pops immediately!
+        // Update celebration data with exact persisted results
         if (options.showAnimation) {
           setCelebrationData({
             streak: result.newStreak,
             isMilestone: result.earnedNewFreezeCoin
           });
-          setShowCelebration(true);
         }
 
         // Asynchronous non-blocking background AI motivation and widget sync
@@ -263,7 +276,7 @@ export const StreakProvider = ({ children }) => {
         throw e;
       }
     },
-    [habits, todayJournal, syncWidgetState]
+    [challenge, habits, todayJournal, syncWidgetState]
   );
 
   // Auto check-in trigger / rollback when criteria changes dynamically
@@ -326,35 +339,36 @@ export const StreakProvider = ({ children }) => {
     [challenge, checkStreakEligibility, checkIn, todayJournal, syncWidgetState]
   );
 
-  // Toggle habit checkbox with optimistic UI and tap debouncing
+  // Toggle habit checkbox with instantaneous optimistic UI, immediate in-memory streak sync, and background persistence
   const toggleHabit = async (habitId) => {
     if (isTogglingHabitRef.current) return;
     isTogglingHabitRef.current = true;
 
     try {
-      // 1. Instant optimistic state update so UI reacts at 60 FPS
+      // 1. Instant optimistic state update so UI reacts at 60/120 FPS
       const optimistic = habits.map((h) =>
         h.id === habitId ? { ...h, completedToday: !h.completedToday } : h
       );
       setHabits(optimistic);
 
-      const updated = await toggleMicroHabit(habitId);
-      setHabits(updated);
+      // 2. Evaluate streak check-in or rollback in memory immediately!
+      checkAndTriggerAutoCheckIn(optimistic, supremeGoal);
 
-      const updatedHistory = await getActivityHistory();
-      setHistory({ ...updatedHistory });
-
-      // Trigger auto check-in or rollback
-      await checkAndTriggerAutoCheckIn(updated, supremeGoal);
-
-      // Widget sync in background
-      syncWidgetState({ habits: updated });
+      // 3. Persist and sync to native widget in background without blocking UI thread
+      (async () => {
+        try {
+          const updated = await toggleMicroHabit(habitId);
+          await syncWidgetState({ habits: updated });
+        } catch (e) {
+          console.warn('background habit toggle error:', e);
+        }
+      })();
     } catch (err) {
       console.warn('toggleHabit error:', err);
     } finally {
       setTimeout(() => {
         isTogglingHabitRef.current = false;
-      }, 200);
+      }, 60);
     }
   };
 
@@ -410,29 +424,40 @@ export const StreakProvider = ({ children }) => {
     if (isTogglingSupremeRef.current) return supremeGoal;
     isTogglingSupremeRef.current = true;
     try {
+      let updatedSupreme = supremeGoal;
       // Optimistic update so switch animates immediately
       if (supremeGoal?.dailyGoal) {
-        setSupremeGoal((prev) => ({
-          ...prev,
+        updatedSupreme = {
+          ...supremeGoal,
           dailyGoal: {
-            ...prev.dailyGoal,
-            completed: !prev.dailyGoal.completed
+            ...supremeGoal.dailyGoal,
+            completed: !supremeGoal.dailyGoal.completed
           }
-        }));
+        };
+        setSupremeGoal(updatedSupreme);
       }
 
-      const updated = await toggleSupremeDailyGoal();
-      setSupremeGoal(updated);
-      await checkAndTriggerAutoCheckIn(habits, updated);
-      syncWidgetState({ supreme: updated });
-      return updated;
+      // Check auto check-in or rollback in memory immediately!
+      checkAndTriggerAutoCheckIn(habits, updatedSupreme);
+
+      // Background persistence & widget sync
+      (async () => {
+        try {
+          const persisted = await toggleSupremeDailyGoal();
+          await syncWidgetState({ supreme: persisted });
+        } catch (e) {
+          console.warn('background supreme toggle error:', e);
+        }
+      })();
+
+      return updatedSupreme;
     } catch (err) {
       console.warn('toggleSupremeGoal error:', err);
       return supremeGoal;
     } finally {
       setTimeout(() => {
         isTogglingSupremeRef.current = false;
-      }, 200);
+      }, 60);
     }
   };
 

@@ -100,7 +100,7 @@ export const REALITY_CHECK_QUESTIONS = [
   }
 ];
 
-export const MistakesVsDreamCard = () => {
+export const MistakesVsDreamCard = React.memo(() => {
   const [boardData, setBoardData] = useState({
     mistakesNotePhotoUri: null,
     mistakesNoteName: null,
@@ -574,7 +574,7 @@ export const MistakesVsDreamCard = () => {
                   activeOpacity={0.8}
                 >
                   <Ionicons name="newspaper-outline" size={13} color="#ffffff" />
-                  <Text style={styles.cardActionBtnText}>9 Questions</Text>
+                  <Text style={styles.cardActionBtnText} numberOfLines={1}>Read 9 Questions</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -583,7 +583,7 @@ export const MistakesVsDreamCard = () => {
                   activeOpacity={0.8}
                 >
                   <Ionicons name="camera-outline" size={13} color={THEME.crimsonPureRed} />
-                  <Text style={styles.cardActionBtnTextSecondary}>Upload</Text>
+                  <Text style={styles.cardActionBtnTextSecondary} numberOfLines={1}>Upload Photo</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -799,7 +799,7 @@ export const MistakesVsDreamCard = () => {
                 activeOpacity={0.8}
               >
                 <Ionicons name="camera" size={16} color="#ffffff" />
-                <Text style={styles.guideTopCameraBtnText}>Take Photo 📸</Text>
+                <Text style={styles.guideTopCameraBtnText} numberOfLines={1}>Take Photo 📸</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -808,7 +808,7 @@ export const MistakesVsDreamCard = () => {
                 activeOpacity={0.8}
               >
                 <Ionicons name="images-outline" size={16} color={THEME.marigoldLight} />
-                <Text style={styles.guideTopGalleryBtnText}>From Gallery 📁</Text>
+                <Text style={styles.guideTopGalleryBtnText} numberOfLines={1}>From Gallery 📁</Text>
               </TouchableOpacity>
             </View>
 
@@ -862,8 +862,8 @@ export const MistakesVsDreamCard = () => {
                     onPress={() => handleCameraFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="camera" size={17} color="#ffffff" />
-                    <Text style={styles.guideCameraBtnText}>Take Photo with Camera 📸</Text>
+                    <Ionicons name="camera" size={18} color="#ffffff" />
+                    <Text style={styles.guideCameraBtnText} numberOfLines={1}>Take Photo with Camera 📸</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -871,8 +871,8 @@ export const MistakesVsDreamCard = () => {
                     onPress={() => handleGalleryFromGuide('mistakes')}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="images-outline" size={17} color={THEME.marigoldLight} />
-                    <Text style={styles.guideGalleryBtnText}>Choose from Gallery 📁</Text>
+                    <Ionicons name="images-outline" size={18} color={THEME.marigoldLight} />
+                    <Text style={styles.guideGalleryBtnText} numberOfLines={1}>Choose from Gallery 📁</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -974,7 +974,7 @@ export const MistakesVsDreamCard = () => {
       </Modal>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -1342,44 +1342,48 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   cardBtnRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: 6,
     marginTop: 6,
     width: '100%'
   },
   cardActionBtnPrimary: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 6,
     backgroundColor: THEME.crimson,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderRadius: 8
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    overflow: 'hidden'
   },
   cardActionBtnSecondary: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 6,
     backgroundColor: 'rgba(225, 29, 72, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(225, 29, 72, 0.4)',
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderRadius: 8
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    overflow: 'hidden'
   },
   cardActionBtnText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
-    color: '#ffffff'
+    color: '#ffffff',
+    flexShrink: 1
   },
   cardActionBtnTextSecondary: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
-    color: THEME.crimsonPureRed
+    color: THEME.crimsonPureRed,
+    flexShrink: 1
   },
   uploadBtnCrimson: {
     flexDirection: 'row',
@@ -1474,12 +1478,15 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: THEME.crimson,
     paddingVertical: 10,
-    borderRadius: 10
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    overflow: 'hidden'
   },
   guideTopCameraBtnText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '800'
+    fontWeight: '800',
+    flexShrink: 1
   },
   guideTopGalleryBtn: {
     flex: 1,
@@ -1491,12 +1498,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(245, 158, 11, 0.4)',
     paddingVertical: 10,
-    borderRadius: 10
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    overflow: 'hidden'
   },
   guideTopGalleryBtnText: {
     color: THEME.marigoldLight,
     fontSize: 12,
-    fontWeight: '800'
+    fontWeight: '800',
+    flexShrink: 1
   },
   guideModalHeader: {
     flexDirection: 'row',
@@ -1613,40 +1623,47 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   closingBtnsRow: {
-    flexDirection: 'row',
-    gap: 10
+    flexDirection: 'column',
+    gap: 8,
+    width: '100%'
   },
   guideCameraBtn: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: THEME.crimson,
-    paddingVertical: 10,
-    borderRadius: 12
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    overflow: 'hidden'
   },
   guideCameraBtnText: {
     color: '#ffffff',
-    fontSize: 11.5,
-    fontWeight: '800'
+    fontSize: 13,
+    fontWeight: '800',
+    flexShrink: 1
   },
   guideGalleryBtn: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: 'rgba(245, 158, 11, 0.15)',
     borderWidth: 1.2,
     borderColor: THEME.marigold,
-    paddingVertical: 10,
-    borderRadius: 12
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    overflow: 'hidden'
   },
   guideGalleryBtnText: {
     color: THEME.marigoldLight,
-    fontSize: 11.5,
-    fontWeight: '800'
+    fontSize: 13,
+    fontWeight: '800',
+    flexShrink: 1
   },
   // Modal styles
   modalBackdrop: {
